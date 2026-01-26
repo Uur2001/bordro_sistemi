@@ -63,41 +63,37 @@ def hesapla_sgk_matrahi(brut_kazanc, onceki_donem_brut=0, iki_onceki_donem_brut=
     return yuvarla(toplam)
 
 
-def hesapla_sgk_isci_primi(sgk_matrahi):
+def hesapla_sgk_isci_primi(sgk_matrahi, oran=None):
     """
     İşçi SGK primini hesaplar.
 
-    İşçi SGK Primi = SGK Matrahı × %14
-
     Parametreler:
         sgk_matrahi: SGK matrahı (TL)
+        oran: SGK işçi oranı (varsayılan: constants'tan alınır)
 
     Döndürür:
         İşçi SGK primi (TL)
-
-    Örnek (PDF'den):
-        hesapla_sgk_isci_primi(40335.52) -> 5646.97
     """
-    prim = sgk_matrahi * (c.SGK_ISCI_ORANI / 100)
+    if oran is None:
+        oran = c.SGK_ISCI_ORANI
+    prim = sgk_matrahi * (oran / 100)
     return yuvarla(prim)
 
 
-def hesapla_issizlik_isci_primi(sgk_matrahi):
+def hesapla_issizlik_isci_primi(sgk_matrahi, oran=None):
     """
     İşçi işsizlik sigortası primini hesaplar.
 
-    İşsizlik Primi = SGK Matrahı × %1
-
     Parametreler:
         sgk_matrahi: SGK matrahı (TL)
+        oran: İşsizlik işçi oranı (varsayılan: constants'tan alınır)
 
     Döndürür:
         İşçi işsizlik primi (TL)
-
-    Örnek (PDF'den):
-        hesapla_issizlik_isci_primi(40335.52) -> 403.36
     """
-    prim = sgk_matrahi * (c.ISSIZLIK_ISCI_ORANI / 100)
+    if oran is None:
+        oran = c.ISSIZLIK_ISCI_ORANI
+    prim = sgk_matrahi * (oran / 100)
     return yuvarla(prim)
 
 
@@ -123,67 +119,65 @@ def hesapla_bes_kesintisi(sgk_matrahi, bes_aktif=True):
     return kesinti
 
 
-def hesapla_sgk_isveren_primi(sgk_matrahi, tehlikeli_is=False):
+def hesapla_sgk_isveren_primi(sgk_matrahi, oran=None):
     """
     İşveren SGK primini hesaplar.
 
-    Normal iş: SGK Matrahı × %15.5
-    Tehlikeli iş: SGK Matrahı × %20.5
-
     Parametreler:
         sgk_matrahi: SGK matrahı (TL)
-        tehlikeli_is: Tehlikeli iş mi? (varsayılan: False)
+        oran: SGK işveren oranı (varsayılan: constants'tan alınır)
 
     Döndürür:
         İşveren SGK primi (TL)
     """
-    oran = c.SGK_ISVEREN_TEHLIKELI if tehlikeli_is else c.SGK_ISVEREN_ORANI
+    if oran is None:
+        oran = c.SGK_ISVEREN_ORANI
     prim = sgk_matrahi * (oran / 100)
     return yuvarla(prim)
 
 
-def hesapla_kvsk_primi(sgk_matrahi):
+def hesapla_kvsk_primi(sgk_matrahi, oran=None):
     """
     Kısa Vadeli Sigorta Kolları primini hesaplar (İşveren).
 
-    KVSK = SGK Matrahı × %2.25
-
     Parametreler:
         sgk_matrahi: SGK matrahı (TL)
+        oran: KVSK oranı (varsayılan: constants'tan alınır)
 
     Döndürür:
         KVSK primi (TL)
     """
-    prim = sgk_matrahi * (c.SGK_KVSK_ORANI / 100)
+    if oran is None:
+        oran = c.SGK_KVSK_ORANI
+    prim = sgk_matrahi * (oran / 100)
     return yuvarla(prim)
 
 
-def hesapla_issizlik_isveren_primi(sgk_matrahi):
+def hesapla_issizlik_isveren_primi(sgk_matrahi, oran=None):
     """
     İşveren işsizlik sigortası primini hesaplar.
 
-    İşveren İşsizlik = SGK Matrahı × %2
-
     Parametreler:
         sgk_matrahi: SGK matrahı (TL)
+        oran: İşsizlik işveren oranı (varsayılan: constants'tan alınır)
 
     Döndürür:
         İşveren işsizlik primi (TL)
     """
-    prim = sgk_matrahi * (c.ISSIZLIK_ISVEREN_ORANI / 100)
+    if oran is None:
+        oran = c.ISSIZLIK_ISVEREN_ORANI
+    prim = sgk_matrahi * (oran / 100)
     return yuvarla(prim)
 
 
-def hesapla_hazine_yardimi(sgk_matrahi, hazine_yardimi_aktif=True):
+def hesapla_hazine_yardimi(sgk_matrahi, hazine_yardimi_aktif=True, oran=None):
     """
-    5 puanlık hazine yardımını hesaplar.
-
-    Hazine Yardımı = SGK Matrahı × %2
-    (İşveren SGK priminden düşülür)
+    Hazine yardımını hesaplar.
 
     Parametreler:
         sgk_matrahi: SGK matrahı (TL)
         hazine_yardimi_aktif: Hazine yardımı uygulanacak mı?
+        oran: Hazine yardımı oranı (varsayılan: constants'tan alınır)
 
     Döndürür:
         Hazine yardımı tutarı (TL)
@@ -191,47 +185,51 @@ def hesapla_hazine_yardimi(sgk_matrahi, hazine_yardimi_aktif=True):
     if not hazine_yardimi_aktif:
         return 0.0
 
-    yardim = sgk_matrahi * (c.HAZINE_YARDIMI_ORANI / 100)
+    if oran is None:
+        oran = c.HAZINE_YARDIMI_ORANI
+
+    # Oran 0 ise yardım yok
+    if oran == 0:
+        return 0.0
+
+    yardim = sgk_matrahi * (oran / 100)
     return yuvarla(yardim)
 
 
-def hesapla_tum_sgk_primleri(sgk_matrahi, bes_aktif=True, hazine_yardimi_aktif=True, tehlikeli_is=False):
+def hesapla_tum_sgk_primleri(sgk_matrahi, sgk_tipi='1', bes_aktif=True, hazine_yardimi_aktif=True):
     """
     Tüm SGK primlerini tek seferde hesaplar.
 
     Parametreler:
         sgk_matrahi: SGK matrahı (TL)
+        sgk_tipi: SGK belge tipi kodu (varsayılan: '1')
         bes_aktif: BES kesintisi yapılacak mı?
         hazine_yardimi_aktif: Hazine yardımı uygulanacak mı?
-        tehlikeli_is: Tehlikeli iş mi?
 
     Döndürür:
         dict: Tüm SGK primlerini içeren sözlük
-
-    Örnek:
-        hesapla_tum_sgk_primleri(40335.52) -> {
-            'isci_sgk': 5646.97,
-            'isci_issizlik': 403.36,
-            'isci_bes': 1210.07,
-            'isci_toplam': 7260.40,
-            'isveren_sgk': 6251.99,
-            'isveren_kvsk': 907.55,
-            'isveren_issizlik': 806.71,
-            'hazine_yardimi': 806.71,
-            'isveren_toplam': 7159.54
-        }
     """
+    # SGK tipine göre oranları al
+    oranlar = c.get_sgk_oranlari(sgk_tipi)
+
     # İşçi primleri
-    isci_sgk = hesapla_sgk_isci_primi(sgk_matrahi)
-    isci_issizlik = hesapla_issizlik_isci_primi(sgk_matrahi)
+    isci_sgk = hesapla_sgk_isci_primi(sgk_matrahi, oranlar['sgk_isci'])
+    isci_issizlik = hesapla_issizlik_isci_primi(sgk_matrahi, oranlar['issizlik_isci'])
     isci_bes = hesapla_bes_kesintisi(sgk_matrahi, bes_aktif)
     isci_toplam = yuvarla(isci_sgk + isci_issizlik + isci_bes)
 
     # İşveren primleri
-    isveren_sgk = hesapla_sgk_isveren_primi(sgk_matrahi, tehlikeli_is)
-    isveren_kvsk = hesapla_kvsk_primi(sgk_matrahi)
-    isveren_issizlik = hesapla_issizlik_isveren_primi(sgk_matrahi)
-    hazine_yardimi = hesapla_hazine_yardimi(sgk_matrahi, hazine_yardimi_aktif)
+    isveren_sgk = hesapla_sgk_isveren_primi(sgk_matrahi, oranlar['sgk_isveren'])
+    isveren_kvsk = hesapla_kvsk_primi(sgk_matrahi, oranlar['kvsk'])
+    isveren_issizlik = hesapla_issizlik_isveren_primi(sgk_matrahi, oranlar['issizlik_isveren'])
+
+    # Hazine yardımı (SGK tipine göre oran değişebilir)
+    hazine_yardimi = hesapla_hazine_yardimi(
+        sgk_matrahi,
+        hazine_yardimi_aktif,
+        oranlar['hazine_yardimi']
+    )
+
     isveren_toplam = yuvarla(isveren_sgk + isveren_kvsk + isveren_issizlik - hazine_yardimi)
 
     return {
@@ -244,94 +242,306 @@ def hesapla_tum_sgk_primleri(sgk_matrahi, bes_aktif=True, hazine_yardimi_aktif=T
         'isveren_issizlik': isveren_issizlik,
         'hazine_yardimi': hazine_yardimi,
         'isveren_toplam': isveren_toplam,
+        'sgk_tipi': sgk_tipi,
+        'oranlar': oranlar,
     }
 
 
 # ==========================================
+# 1.1. SGK TEŞVİK HESAPLAMALARI
+# ==========================================
+
+def hesapla_tesvikli_sgk(
+    sgk_matrahi,
+    calisan_gun=30,
+    kanun_kodu=None,
+    sgk_tipi='1',
+    bes_aktif=True,
+    hazine_yardimi_aktif=True
+):
+    """
+    Teşvik kanunlarına göre SGK indirimlerini hesaplar.
+
+    Bu fonksiyon, SGK teşvik kanunlarına göre işveren için
+    uygulanacak indirimleri hesaplar.
+
+    Parametreler:
+        sgk_matrahi: SGK matrahı (TL) - Prime Esas Kazanç (PEK)
+        calisan_gun: Çalışılan gün sayısı (gün hesaplı teşvikler için)
+        kanun_kodu: Uygulanacak teşvik kanun kodu (ör: '14447', '05746')
+        sgk_tipi: SGK belge tipi kodu (varsayılan: '1')
+        bes_aktif: BES kesintisi yapılacak mı?
+        hazine_yardimi_aktif: Hazine yardımı uygulanacak mı?
+
+    Döndürür:
+        dict: SGK primleri ve teşvik bilgileri
+            - Normal SGK primleri (teşviksiz)
+            - Teşvik tutarı
+            - Teşvikli işveren maliyeti
+            - Kanun bilgileri
+
+    Örnek:
+        # Genç istihdam teşviği (%100) - 14447
+        sonuc = hesapla_tesvikli_sgk(
+            sgk_matrahi=33030,  # Asgari ücret
+            kanun_kodu='14447',
+            sgk_tipi='1'
+        )
+        # sonuc['tesvik_tutari'] = 6440.85 (Asgari ücret × %19.5)
+    """
+    # Önce normal SGK primlerini hesapla
+    normal_primler = hesapla_tum_sgk_primleri(
+        sgk_matrahi=sgk_matrahi,
+        sgk_tipi=sgk_tipi,
+        bes_aktif=bes_aktif,
+        hazine_yardimi_aktif=hazine_yardimi_aktif
+    )
+
+    # Teşvik bilgilerini al
+    kanun = c.get_kanun_bilgisi(kanun_kodu)
+
+    # Teşvik yoksa normal primleri döndür
+    if kanun is None:
+        normal_primler['tesvik'] = {
+            'aktif': False,
+            'kanun_kodu': None,
+            'kanun_adi': None,
+            'tesvik_tutari': 0,
+            'detay': None,
+        }
+        return normal_primler
+
+    # SGK oranlarını al
+    oranlar = c.get_sgk_oranlari(sgk_tipi)
+
+    # Teşvik matrahını belirle
+    if kanun['matrah_tipi'] == 'pek':
+        # PEK (Prime Esas Kazanç) = SGK Matrahı
+        tesvik_matrahi = sgk_matrahi
+    elif kanun['matrah_tipi'] == 'pek_alt_sinir':
+        # PEK Alt Sınırı = Asgari Ücret
+        # Matrah asgari ücretten düşükse, matrah kullanılır
+        tesvik_matrahi = min(sgk_matrahi, c.ASGARI_UCRET_BRUT)
+    elif kanun['matrah_tipi'] == 'gun_hesabi':
+        # Gün başına hesaplama
+        tesvik_tutari = yuvarla(calisan_gun * kanun['gunluk_tutar'])
+        normal_primler['tesvik'] = {
+            'aktif': True,
+            'kanun_kodu': kanun_kodu,
+            'kanun_adi': kanun['ad'],
+            'aciklama': kanun['aciklama'],
+            'tesvik_tutari': tesvik_tutari,
+            'matrah_tipi': 'gun_hesabi',
+            'calisan_gun': calisan_gun,
+            'gunluk_tutar': kanun['gunluk_tutar'],
+            'detay': {
+                'hesaplama': f"{calisan_gun} gün × {kanun['gunluk_tutar']} TL",
+            },
+        }
+        # İşveren toplamını güncelle
+        normal_primler['tesvikli_isveren_toplam'] = yuvarla(
+            normal_primler['isveren_toplam'] - tesvik_tutari
+        )
+        return normal_primler
+    else:
+        tesvik_matrahi = sgk_matrahi
+
+    # Teşvik tutarını hesapla
+    tesvik_tutari = 0
+    detay = {}
+
+    indirim_orani = kanun['indirim_orani']
+    kapsam = kanun['kapsam']
+
+    # Özel oran durumu (06486, 46486, vb. - sabit % indirim)
+    if 'ozel_oran' in kapsam:
+        tesvik_tutari = yuvarla(tesvik_matrahi * (indirim_orani / 100))
+        detay['ozel_oran_indirimi'] = tesvik_tutari
+        detay['hesaplama'] = f"Matrah × %{indirim_orani} = {tesvik_tutari}"
+    else:
+        # SGK İşveren hissesi indirimi
+        if 'sgk_isveren' in kapsam:
+            sgk_isveren_indirimi = yuvarla(
+                tesvik_matrahi * (oranlar['sgk_isveren'] / 100) * (indirim_orani / 100)
+            )
+            tesvik_tutari += sgk_isveren_indirimi
+            detay['sgk_isveren_indirimi'] = sgk_isveren_indirimi
+
+        # SGK İşçi hissesi indirimi (nadir - 26322, 15921 gibi)
+        if 'sgk_isci' in kapsam:
+            sgk_isci_indirimi = yuvarla(
+                tesvik_matrahi * (oranlar['sgk_isci'] / 100) * (indirim_orani / 100)
+            )
+            tesvik_tutari += sgk_isci_indirimi
+            detay['sgk_isci_indirimi'] = sgk_isci_indirimi
+
+        # KVSK indirimi (tamamı)
+        if 'kvsk' in kapsam:
+            kvsk_indirimi = yuvarla(
+                tesvik_matrahi * (oranlar['kvsk'] / 100) * (indirim_orani / 100)
+            )
+            tesvik_tutari += kvsk_indirimi
+            detay['kvsk_indirimi'] = kvsk_indirimi
+
+        # KVSK kısmi indirimi (15921 - %1)
+        if 'kvsk_kismi' in kapsam:
+            kvsk_ozel_oran = kanun.get('kvsk_orani', 1)  # Varsayılan %1
+            kvsk_kismi_indirimi = yuvarla(tesvik_matrahi * (kvsk_ozel_oran / 100))
+            tesvik_tutari += kvsk_kismi_indirimi
+            detay['kvsk_kismi_indirimi'] = kvsk_kismi_indirimi
+            detay['kvsk_orani'] = kvsk_ozel_oran
+
+        # İşsizlik İşveren indirimi
+        if 'issizlik_isveren' in kapsam:
+            issizlik_isveren_indirimi = yuvarla(
+                tesvik_matrahi * (oranlar['issizlik_isveren'] / 100) * (indirim_orani / 100)
+            )
+            tesvik_tutari += issizlik_isveren_indirimi
+            detay['issizlik_isveren_indirimi'] = issizlik_isveren_indirimi
+
+        # İşsizlik İşçi indirimi
+        if 'issizlik_isci' in kapsam:
+            issizlik_isci_indirimi = yuvarla(
+                tesvik_matrahi * (oranlar['issizlik_isci'] / 100) * (indirim_orani / 100)
+            )
+            tesvik_tutari += issizlik_isci_indirimi
+            detay['issizlik_isci_indirimi'] = issizlik_isci_indirimi
+
+    tesvik_tutari = yuvarla(tesvik_tutari)
+
+    # Teşvik bilgilerini ekle
+    normal_primler['tesvik'] = {
+        'aktif': True,
+        'kanun_kodu': kanun_kodu,
+        'kanun_adi': kanun['ad'],
+        'aciklama': kanun['aciklama'],
+        'tesvik_tutari': tesvik_tutari,
+        'matrah_tipi': kanun['matrah_tipi'],
+        'tesvik_matrahi': tesvik_matrahi,
+        'indirim_orani': indirim_orani,
+        'kapsam': kapsam,
+        'belgeler': kanun['belgeler'],
+        'detay': detay,
+    }
+
+    # Teşvikli işveren toplamını hesapla
+    normal_primler['tesvikli_isveren_toplam'] = yuvarla(
+        normal_primler['isveren_toplam'] - tesvik_tutari
+    )
+
+    return normal_primler
+
+
+def hesapla_tesvik_ozeti(sgk_matrahi, calisan_gun=30, kanun_kodlari=None, sgk_tipi='1'):
+    """
+    Birden fazla teşvik kanunu için karşılaştırmalı özet hesaplar.
+
+    Parametreler:
+        sgk_matrahi: SGK matrahı (TL)
+        calisan_gun: Çalışılan gün sayısı
+        kanun_kodlari: Liste halinde kanun kodları (None ise tüm kanunlar)
+        sgk_tipi: SGK belge tipi kodu
+
+    Döndürür:
+        dict: Her kanun için teşvik tutarları ve karşılaştırma
+    """
+    if kanun_kodlari is None:
+        kanun_kodlari = list(c.SGK_KANUNLARI.keys())
+
+    sonuclar = {}
+    for kanun_kodu in kanun_kodlari:
+        sonuc = hesapla_tesvikli_sgk(
+            sgk_matrahi=sgk_matrahi,
+            calisan_gun=calisan_gun,
+            kanun_kodu=kanun_kodu,
+            sgk_tipi=sgk_tipi
+        )
+        sonuclar[kanun_kodu] = {
+            'kanun_adi': sonuc['tesvik']['kanun_adi'],
+            'tesvik_tutari': sonuc['tesvik']['tesvik_tutari'],
+            'normal_isveren_toplam': sonuc['isveren_toplam'],
+            'tesvikli_isveren_toplam': sonuc.get('tesvikli_isveren_toplam', sonuc['isveren_toplam']),
+        }
+
+    return sonuclar
 # 2. GELİR VERGİSİ HESAPLAMALARI
 # ==========================================
 
 def hesapla_ozel_sigorta_indirimi(brut_ucret, saglik_sigorta_primi=0, hayat_sigorta_primi=0,
-                                  saglik_sigorta_kesinti=None, hayat_sigorta_kesinti=None,
-                                  saglik_sigorta_isveren_kesinti=None, hayat_sigorta_isveren_kesinti=None):
+                                   saglik_sigorta_kesinti=0, hayat_sigorta_kesinti=0,
+                                   saglik_sigorta_isveren_kesinti=0, hayat_sigorta_isveren_kesinti=0):
     """
     Özel sigorta indirimlerini hesaplar.
 
-    Kurallar:
-    - Sağlık sigortası: İşçi kesinti + İşveren kesinti, brüt ücretin %15'ini geçemez
-    - Hayat sigortası: Sadece İşçi kesintinin %50'si indirilebilir (İşveren dahil değil!)
-    - Toplam: Yıllık asgari ücret toplamını geçemez
+    Sağlık Sigortası İndirimi:
+        - İşçi kesintisi + İşveren kesintisi
+        - Brüt ücretin %15'ini geçemez
+        - Aylık asgari ücretin brütünü geçemez
+
+    Hayat Sigortası İndirimi:
+        - Sadece İşçi kesintisi × %50 (İşveren kesintisi dahil DEĞİL)
+        - Aylık asgari ücretin brütünü geçemez
 
     Parametreler:
         brut_ucret: Brüt ücret (TL)
-        saglik_sigorta_primi: Sağlık sigortası işveren payı brütü - brüte eklenen (TL)
-        hayat_sigorta_primi: Hayat sigortası işveren payı brütü - brüte eklenen (TL)
-        saglik_sigorta_kesinti: Sağlık sigortası işçi kesintisi (TL)
-        hayat_sigorta_kesinti: Hayat sigortası işçi kesintisi (TL)
-        saglik_sigorta_isveren_kesinti: Sağlık sigortası işveren kesintisi - indirim için (TL)
-        hayat_sigorta_isveren_kesinti: Hayat sigortası işveren kesintisi - kullanılmıyor (TL)
+        saglik_sigorta_primi: Sağlık sigortası brüt tutarı
+        hayat_sigorta_primi: Hayat sigortası brüt tutarı
+        saglik_sigorta_kesinti: Sağlık sigortası işçi kesintisi
+        hayat_sigorta_kesinti: Hayat sigortası işçi kesintisi
+        saglik_sigorta_isveren_kesinti: Sağlık sigortası işveren kesintisi
+        hayat_sigorta_isveren_kesinti: Hayat sigortası işveren kesintisi
 
     Döndürür:
-        dict: Sağlık ve hayat sigortası indirim tutarları
+        dict: İndirim detayları
     """
-    # Kesinti tutarları
-    saglik_isci = saglik_sigorta_kesinti if saglik_sigorta_kesinti is not None else 0
-    saglik_isveren = saglik_sigorta_isveren_kesinti if saglik_sigorta_isveren_kesinti is not None else 0
-    hayat_isci = hayat_sigorta_kesinti if hayat_sigorta_kesinti is not None else 0
-    # hayat_isveren kullanılmıyor - indirime dahil değil
+    # Sağlık sigortası indirimi: İşçi kesintisi + İşveren kesintisi
+    saglik_toplam = saglik_sigorta_kesinti + saglik_sigorta_isveren_kesinti
 
-    # Sağlık sigortası indirimi = İşçi Kesinti + İşveren Kesinti
-    # Brüt ücretin %15'ini geçemez
-    saglik_toplam = saglik_isci + saglik_isveren
-    saglik_limit = brut_ucret * (c.SAGLIK_SIGORTA_INDIRIM_ORANI / 100)
-    saglik_indirim = min(saglik_toplam, saglik_limit)
+    # Limit: Brüt ücretin %15'i
+    saglik_limit_yuzde = brut_ucret * (c.SAGLIK_SIGORTA_INDIRIM_ORANI / 100)
 
-    # Hayat sigortası indirimi = Sadece İşçi Kesinti × %50
-    # İşveren kesintisi indirime dahil DEĞİL!
-    hayat_indirim = hayat_isci * (c.HAYAT_SIGORTA_INDIRIM_ORANI / 100)
+    # Limit: Aylık asgari ücret
+    saglik_limit_asgari = c.ASGARI_UCRET_BRUT
 
-    # Toplam limit kontrolü (aylık bazda asgari ücret)
+    # En düşük limiti uygula
+    saglik_indirim = min(saglik_toplam, saglik_limit_yuzde, saglik_limit_asgari)
+
+    # Hayat sigortası indirimi: Sadece işçi kesintisi × %50
+    hayat_indirim_ham = hayat_sigorta_kesinti * (c.HAYAT_SIGORTA_INDIRIM_ORANI / 100)
+
+    # Limit: Aylık asgari ücret
+    hayat_limit_asgari = c.ASGARI_UCRET_BRUT
+
+    hayat_indirim = min(hayat_indirim_ham, hayat_limit_asgari)
+
+    # Toplam indirim
     toplam_indirim = saglik_indirim + hayat_indirim
-    if toplam_indirim > c.ASGARI_UCRET_BRUT:
-        # Orantılı olarak düşür
-        oran = c.ASGARI_UCRET_BRUT / toplam_indirim
-        saglik_indirim = yuvarla(saglik_indirim * oran)
-        hayat_indirim = yuvarla(hayat_indirim * oran)
 
     return {
         'saglik_indirim': yuvarla(saglik_indirim),
         'hayat_indirim': yuvarla(hayat_indirim),
-        'toplam_indirim': yuvarla(saglik_indirim + hayat_indirim)
+        'toplam_indirim': yuvarla(toplam_indirim),
     }
 
 
 def hesapla_gelir_vergisi_matrahi(brut_kazanc, sgk_kesintileri, saglik_sigorta_indirimi=0,
-                                  hayat_sigorta_indirimi=0, engellilik_indirimi=0):
+                                   hayat_sigorta_indirimi=0, engellilik_indirimi=0):
     """
-    Gelir Vergisi Matrahını hesaplar.
+    Gelir vergisi matrahını hesaplar.
 
     GV Matrahı = Brüt Kazanç - SGK Kesintileri - Özel Sigorta İndirimleri - Engellilik İndirimi
 
-    Not: SGK kesintileri = İşçi SGK + İşçi İşsizlik (BES dahil değil!)
-
     Parametreler:
-        brut_kazanc: Toplam brüt kazanç (TL)
-        sgk_kesintileri: İşçi SGK + İşsizlik toplamı (TL) - BES hariç!
+        brut_kazanc: Brüt kazanç toplamı (TL)
+        sgk_kesintileri: SGK + İşsizlik kesintileri toplamı (TL)
         saglik_sigorta_indirimi: Sağlık sigortası indirimi (TL)
         hayat_sigorta_indirimi: Hayat sigortası indirimi (TL)
         engellilik_indirimi: Engellilik indirimi (TL)
 
     Döndürür:
         Gelir vergisi matrahı (TL)
-
-    Örnek (PDF'den):
-        Brüt: 40234.54 - SGK: 6050.33 - Sağlık: 1222.00 - Hayat: 555.50 = 32406.71
     """
-    matrah = (brut_kazanc
-              - sgk_kesintileri
-              - saglik_sigorta_indirimi
-              - hayat_sigorta_indirimi
-              - engellilik_indirimi)
+    matrah = brut_kazanc - sgk_kesintileri - saglik_sigorta_indirimi - hayat_sigorta_indirimi - engellilik_indirimi
 
     # Matrah negatif olamaz
     if matrah < 0:
@@ -340,35 +550,64 @@ def hesapla_gelir_vergisi_matrahi(brut_kazanc, sgk_kesintileri, saglik_sigorta_i
     return yuvarla(matrah)
 
 
-def hesapla_gelir_vergisi(gv_matrahi, kumulatif_matrah_onceki=0):
+def _hesapla_dilimli_vergi(matrah):
     """
-    Gelir vergisini kümülatif olarak hesaplar.
-
-    Türkiye'de gelir vergisi yıl başından itibaren kümülatif hesaplanır.
-    Her ay, o ana kadarki toplam matrah üzerinden vergi hesaplanır,
-    önceki aylarda ödenen vergi düşülür.
+    Kümülatif matrah üzerinden toplam vergiyi hesaplar (yardımcı fonksiyon).
 
     Parametreler:
-        gv_matrahi: Bu ayki gelir vergisi matrahı (TL)
-        kumulatif_matrah_onceki: Önceki aylardan devir matrah (TL)
+        matrah: Kümülatif matrah
 
     Döndürür:
-        dict: Vergi detayları
-
-    Örnek (PDF'den - Ocak ayı, önceki matrah 0):
-        GV Matrahı: 32406.71 -> Vergi: 4861.01 (tamamı %15 diliminde)
+        Toplam vergi
     """
-    # Kümülatif matrah hesapla
+    if matrah <= 0:
+        return 0
+
+    toplam_vergi = 0
+    onceki_limit = 0
+
+    for ust_limit, oran in c.GELIR_VERGISI_DILIMLERI:
+        if ust_limit is None:
+            # Son dilim (sınırsız)
+            dilim_matrahi = matrah - onceki_limit
+            if dilim_matrahi > 0:
+                toplam_vergi += dilim_matrahi * (oran / 100)
+            break
+        else:
+            if matrah <= onceki_limit:
+                break
+
+            dilim_matrahi = min(matrah, ust_limit) - onceki_limit
+            if dilim_matrahi > 0:
+                toplam_vergi += dilim_matrahi * (oran / 100)
+
+            onceki_limit = ust_limit
+
+    return yuvarla(toplam_vergi)
+
+
+def hesapla_gelir_vergisi(gv_matrahi, kumulatif_matrah_onceki=0):
+    """
+    Gelir vergisini hesaplar (kümülatif yöntemle).
+
+    Bu ay için vergi = Yeni kümülatif vergi - Önceki kümülatif vergi
+
+    Parametreler:
+        gv_matrahi: Bu ayki GV matrahı (TL)
+        kumulatif_matrah_onceki: Önceki ayların toplam GV matrahı (TL)
+
+    Döndürür:
+        dict: Vergi hesaplama detayları
+    """
+    # Yeni kümülatif matrah
     kumulatif_matrah_yeni = kumulatif_matrah_onceki + gv_matrahi
 
-    # Yeni kümülatif matrah üzerinden toplam vergiyi hesapla
-    toplam_vergi_yeni = _hesapla_dilimli_vergi(kumulatif_matrah_yeni)
+    # Kümülatif vergiler
+    vergi_yeni = _hesapla_dilimli_vergi(kumulatif_matrah_yeni)
+    vergi_onceki = _hesapla_dilimli_vergi(kumulatif_matrah_onceki)
 
-    # Önceki kümülatif matrah üzerinden ödenen vergiyi hesapla
-    toplam_vergi_onceki = _hesapla_dilimli_vergi(kumulatif_matrah_onceki)
-
-    # Bu ayki vergi = Yeni toplam - Önceki toplam
-    bu_ayki_vergi = toplam_vergi_yeni - toplam_vergi_onceki
+    # Bu ayki vergi
+    bu_ayki_vergi = vergi_yeni - vergi_onceki
 
     return {
         'gv_matrahi': yuvarla(gv_matrahi),
@@ -376,48 +615,6 @@ def hesapla_gelir_vergisi(gv_matrahi, kumulatif_matrah_onceki=0):
         'kumulatif_matrah_yeni': yuvarla(kumulatif_matrah_yeni),
         'hesaplanan_vergi': yuvarla(bu_ayki_vergi),
     }
-
-
-def _hesapla_dilimli_vergi(matrah):
-    """
-    Vergi dilimlerine göre vergi hesaplar (dahili fonksiyon).
-
-    Parametreler:
-        matrah: Gelir vergisi matrahı (TL)
-
-    Döndürür:
-        Hesaplanan vergi (TL)
-    """
-    if matrah <= 0:
-        return 0.0
-
-    toplam_vergi = 0.0
-    kalan_matrah = matrah
-    onceki_limit = 0.0
-
-    for ust_limit, oran in c.GELIR_VERGISI_DILIMLERI:
-        if ust_limit is None:
-            # Son dilim (sınırsız)
-            dilim_matrahi = kalan_matrah
-        else:
-            # Bu dilimdeki matrah
-            dilim_genisligi = ust_limit - onceki_limit
-            dilim_matrahi = min(kalan_matrah, dilim_genisligi)
-
-        # Bu dilimdeki vergi
-        dilim_vergisi = dilim_matrahi * (oran / 100)
-        toplam_vergi += dilim_vergisi
-
-        # Kalan matrahı güncelle
-        kalan_matrah -= dilim_matrahi
-
-        if kalan_matrah <= 0:
-            break
-
-        if ust_limit is not None:
-            onceki_limit = ust_limit
-
-    return yuvarla(toplam_vergi)
 
 
 # ==========================================
@@ -434,9 +631,6 @@ def hesapla_asgari_ucret_gv_matrahi():
 
     Döndürür:
         Asgari ücret GV matrahı (TL)
-
-    Örnek (PDF'den):
-        33030.00 - 4624.20 - 330.30 = 28075.50
     """
     brut = c.ASGARI_UCRET_BRUT
     sgk_kesinti = brut * (c.SGK_ISCI_ORANI / 100)
@@ -450,20 +644,11 @@ def hesapla_asgari_ucret_istisnasi(kumulatif_asgari_matrah_onceki=0):
     """
     Asgari ücret gelir vergisi istisnasını hesaplar.
 
-    2024'ten itibaren AGİ (Asgari Geçim İndirimi) kalktı.
-    Yerine, asgari ücretin vergisi kadar istisna uygulanıyor.
-
-    Kümülatif hesaplanır (yıl içinde dilim değişebilir).
-
     Parametreler:
         kumulatif_asgari_matrah_onceki: Önceki ayların asgari ücret matrah toplamı
 
     Döndürür:
         dict: İstisna detayları
-
-    Örnek (PDF'den - Ocak ayı):
-        Asgari GV Matrahı: 28075.50
-        İstisna Vergi: 28075.50 × %15 = 4211.33
     """
     # Bu ayki asgari ücret GV matrahı
     bu_ayki_asgari_matrah = hesapla_asgari_ucret_gv_matrahi()
@@ -498,17 +683,13 @@ def hesapla_odenecek_gelir_vergisi(hesaplanan_vergi, istisna_vergi):
 
     Parametreler:
         hesaplanan_vergi: Hesaplanan gelir vergisi (TL)
-        istisna_vergi: Asgari ücret istisna vergisi (TL)
+        istisna_vergi: İstisna gelir vergisi (TL)
 
     Döndürür:
         Ödenecek gelir vergisi (TL)
-
-    Örnek (PDF'den):
-        4861.01 - 4211.33 = 649.68
     """
     odenecek = hesaplanan_vergi - istisna_vergi
 
-    # Negatif olamaz
     if odenecek < 0:
         odenecek = 0
 
@@ -523,23 +704,17 @@ def hesapla_damga_vergisi(brut_kazanc):
     """
     Damga vergisini hesaplar.
 
-    Damga Vergisi = Brüt Kazanç × Binde 7.59 (%0.759)
+    DV = Brüt Kazanç × Binde 7.59
 
-    Asgari ücret kadar kısım istisna olduğundan,
-    sadece asgari ücreti aşan kısım üzerinden hesaplanır.
+    Asgari ücretin altında kalan kısım için DV istisnası uygulanır.
 
     Parametreler:
-        brut_kazanc: Toplam brüt kazanç (TL)
+        brut_kazanc: Brüt kazanç toplamı (TL)
 
     Döndürür:
-        dict: Damga vergisi detayları
-
-    Örnek (PDF'den):
-        Brüt: 40234.54, Asgari: 33030.00
-        DV Matrahı: 40234.54 - 33030.00 = 7204.54
-        Ödenecek DV: 7204.54 × 0.00759 = 54.68
+        dict: DV hesaplama detayları
     """
-    # Hesaplanan DV (toplam brüt üzerinden)
+    # Hesaplanan DV (brüt üzerinden)
     hesaplanan_dv = brut_kazanc * (c.DAMGA_VERGISI_ORANI / 100)
 
     # İstisna DV (asgari ücret üzerinden)
@@ -583,9 +758,6 @@ def hesapla_saatlik_ucret(aylik_brut_ucret):
 
     Döndürür:
         Saatlik ücret (TL)
-
-    Örnek:
-        33030 / 225 = 146.80 TL
     """
     saatlik = aylik_brut_ucret / c.AYLIK_SAAT
     return yuvarla(saatlik)
@@ -607,12 +779,6 @@ def hesapla_fazla_mesai(aylik_brut_ucret, fm01_saat=0, fm02_saat=0, fm03_saat=0)
 
     Döndürür:
         dict: Fazla mesai detayları
-
-    Örnek (PDF'den):
-        Saatlik: 146.80 TL
-        FM01: 146.80 × 1.5 × 11 = 2422.20 TL
-        FM02: 146.80 × 2.0 × 11 = 3229.60 TL
-        FM03: 146.80 × 3.0 × 1 = 440.40 TL
     """
     saatlik_ucret = hesapla_saatlik_ucret(aylik_brut_ucret)
 
@@ -655,51 +821,33 @@ def hesapla_fazla_mesai(aylik_brut_ucret, fm01_saat=0, fm02_saat=0, fm03_saat=0)
 
 
 # ==========================================
-# 6. NET ÜCRET HESAPLAMA
+# 6. NET ÜCRET HESABI
 # ==========================================
 
-def hesapla_net_ucret(brut_kazanc, isci_sgk, isci_issizlik, isci_bes,
-                      odenecek_gv, odenecek_dv, ozel_sigorta_kesintisi=0,
-                      ek_kesintiler=0):
+def hesapla_net_ucret(brut_kazanc, isci_sgk, isci_issizlik, isci_bes, odenecek_gv, odenecek_dv,
+                       ozel_sigorta_kesintisi=0, ek_kesintiler=0):
     """
     Net ücreti hesaplar.
 
     Net Ücret = Brüt Kazanç - Tüm Kesintiler
 
-    Kesintiler:
-    - İşçi SGK Primi
-    - İşçi İşsizlik Primi
-    - BES Kesintisi
-    - Ödenecek Gelir Vergisi
-    - Ödenecek Damga Vergisi
-    - Özel Sigorta Kesintileri (Sağlık + Hayat primi ödemeleri)
-    - Ek Kesintiler (İcra, nafaka vb.)
-
     Parametreler:
-        brut_kazanc: Toplam brüt kazanç (TL)
+        brut_kazanc: Brüt kazanç toplamı (TL)
         isci_sgk: İşçi SGK primi (TL)
         isci_issizlik: İşçi işsizlik primi (TL)
-        isci_bes: BES kesintisi (TL)
+        isci_bes: İşçi BES kesintisi (TL)
         odenecek_gv: Ödenecek gelir vergisi (TL)
         odenecek_dv: Ödenecek damga vergisi (TL)
-        ozel_sigorta_kesintisi: Özel sigorta kesintileri toplamı (TL)
-        ek_kesintiler: Ek kesintiler toplamı (TL)
+        ozel_sigorta_kesintisi: Özel sigorta kesintileri (TL)
+        ek_kesintiler: Diğer ek kesintiler (TL)
 
     Döndürür:
-        dict: Net ücret detayları
-
-    Örnek (PDF'den):
-        Brüt: 40234.54
-        SGK: 5646.97, İşsizlik: 403.36, BES: 1210.00
-        GV: 649.68, DV: 54.68
-        Özel Sigorta: 2222.00
-        Yasal Kesinti: 7964.69
-        Net: 30047.85
+        dict: Net ücret hesaplama detayları
     """
-    # Yasal kesintiler toplamı
+    # Yasal kesintiler
     yasal_kesintiler = isci_sgk + isci_issizlik + isci_bes + odenecek_gv + odenecek_dv
 
-    # Tüm kesintiler toplamı
+    # Toplam kesintiler
     toplam_kesintiler = yasal_kesintiler + ozel_sigorta_kesintisi + ek_kesintiler
 
     # Net ücret
@@ -707,11 +855,6 @@ def hesapla_net_ucret(brut_kazanc, isci_sgk, isci_issizlik, isci_bes,
 
     return {
         'brut_kazanc': yuvarla(brut_kazanc),
-        'isci_sgk': yuvarla(isci_sgk),
-        'isci_issizlik': yuvarla(isci_issizlik),
-        'isci_bes': yuvarla(isci_bes),
-        'odenecek_gv': yuvarla(odenecek_gv),
-        'odenecek_dv': yuvarla(odenecek_dv),
         'yasal_kesintiler': yuvarla(yasal_kesintiler),
         'ozel_sigorta_kesintisi': yuvarla(ozel_sigorta_kesintisi),
         'ek_kesintiler': yuvarla(ek_kesintiler),
@@ -720,59 +863,56 @@ def hesapla_net_ucret(brut_kazanc, isci_sgk, isci_issizlik, isci_bes,
     }
 
 
-def hesapla_isveren_maliyeti(brut_kazanc, isveren_sgk, isveren_kvsk,
-                             isveren_issizlik, hazine_yardimi=0, tesvikler=0):
+# ==========================================
+# 7. İŞVEREN MALİYETİ
+# ==========================================
+
+def hesapla_isveren_maliyeti(brut_kazanc, isveren_sgk, isveren_kvsk, isveren_issizlik, hazine_yardimi=0):
     """
     İşveren maliyetini hesaplar.
 
-    İşveren Maliyeti = Brüt Kazanç + İşveren Primleri - Teşvikler
+    İşveren Maliyeti = Brüt Kazanç + İşveren SGK + KVSK + İşveren İşsizlik - Hazine Yardımı
 
     Parametreler:
-        brut_kazanc: Toplam brüt kazanç (TL)
+        brut_kazanc: Brüt kazanç toplamı (TL)
         isveren_sgk: İşveren SGK primi (TL)
-        isveren_kvsk: Kısa vadeli sigorta kolları primi (TL)
+        isveren_kvsk: İşveren KVSK primi (TL)
         isveren_issizlik: İşveren işsizlik primi (TL)
-        hazine_yardimi: 5 puanlık hazine yardımı (TL)
-        tesvikler: Diğer teşvikler (TL)
+        hazine_yardimi: Hazine yardımı tutarı (TL)
 
     Döndürür:
-        dict: Maliyet detayları
-
-    Örnek (PDF'den):
-        Brüt: 40234.54
-        İşveren SGK: 7865.43 + KVSK: 907.55 + İşsizlik: 806.71 = 9579.69
-        Hazine Yardımı: -806.71
-        Maliyet: 49007.52
+        dict: İşveren maliyeti detayları
     """
-    # İşveren primleri toplamı
-    isveren_primleri = isveren_sgk + isveren_kvsk + isveren_issizlik
+    # İşveren prim toplamı
+    isveren_prim_toplami = isveren_sgk + isveren_kvsk + isveren_issizlik
+
+    # Net işveren yükü (hazine yardımı düşülmüş)
+    net_isveren_yuku = isveren_prim_toplami - hazine_yardimi
 
     # Toplam maliyet
-    maliyet = brut_kazanc + isveren_primleri - hazine_yardimi - tesvikler
+    toplam_maliyet = brut_kazanc + net_isveren_yuku
 
     return {
         'brut_kazanc': yuvarla(brut_kazanc),
         'isveren_sgk': yuvarla(isveren_sgk),
         'isveren_kvsk': yuvarla(isveren_kvsk),
         'isveren_issizlik': yuvarla(isveren_issizlik),
-        'isveren_primleri_toplam': yuvarla(isveren_primleri),
+        'isveren_prim_toplami': yuvarla(isveren_prim_toplami),
         'hazine_yardimi': yuvarla(hazine_yardimi),
-        'tesvikler': yuvarla(tesvikler),
-        'toplam_maliyet': yuvarla(maliyet),
+        'net_isveren_yuku': yuvarla(net_isveren_yuku),
+        'toplam_maliyet': yuvarla(toplam_maliyet),
     }
 
 
 # ==========================================
-# 7. ANA BORDRO HESAPLAMA FONKSİYONU
+# 8. ANA BORDRO HESAPLAMA FONKSİYONU
 # ==========================================
 
 def hesapla_bordro(
-        # Temel bilgiler
+        # Temel parametreler
         aylik_brut_ucret,
         ay=1,
         yil=2026,
-
-        # Çalışma bilgileri
         calisan_gun=30,
         ay_gun_sayisi=30,
         eksik_saat=0,
@@ -811,6 +951,9 @@ def hesapla_bordro(
         bes_aktif=True,
         hazine_yardimi_aktif=True,
         engellilik_derecesi=None,  # None, '1', '2', '3'
+
+        # SGK Tipi (YENİ PARAMETRE)
+        sgk_tipi='1',  # Varsayılan: Standart çalışan
 ):
     """
     Tam bordro hesaplaması yapar.
@@ -841,6 +984,7 @@ def hesapla_bordro(
         bes_aktif: BES kesintisi yapılsın mı?
         hazine_yardimi_aktif: Hazine yardımı uygulansın mı?
         engellilik_derecesi: Engellilik derecesi (None, '1', '2', '3')
+        sgk_tipi: SGK belge tipi kodu (varsayılan: '1')
 
     Döndürür:
         dict: Tüm bordro detaylarını içeren sözlük
@@ -904,9 +1048,10 @@ def hesapla_bordro(
         iki_onceki_donem_brut=iki_onceki_donem_brut
     )
 
-    # SGK primleri
+    # SGK primleri (SGK tipine göre dinamik oranlarla)
     sgk_primleri = hesapla_tum_sgk_primleri(
         sgk_matrahi=sgk_matrahi,
+        sgk_tipi=sgk_tipi,
         bes_aktif=bes_aktif,
         hazine_yardimi_aktif=hazine_yardimi_aktif
     )
@@ -1085,6 +1230,7 @@ def hesapla_bordro(
         # SGK bilgileri
         'sgk': {
             'matrah': sgk_matrahi,
+            'sgk_tipi': sgk_tipi,
             'onceki_donem_brut': yuvarla(onceki_donem_brut),
             'iki_onceki_donem_brut': yuvarla(iki_onceki_donem_brut),
             'primler': sgk_primleri,
