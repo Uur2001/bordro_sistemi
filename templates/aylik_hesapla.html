@@ -1,0 +1,701 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Aylık Bordro Hesaplama - Bordro Yönetim Sistemi{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-nav rounded">
+        <a href="{% url 'home' %}"><i class="fas fa-home"></i></a>
+        <span>/</span>
+        <a href="{% url 'bordro_sihirbazi' %}">Hesaplamalar</a>
+        <span>/</span>
+        <span>Bordro Sihirbazı (<span id="currentStepText">1</span>/7)</span>
+    </nav>
+
+    <!-- Wizard Container -->
+    <div class="wizard-container">
+        <!-- Sol Taraf - Adımlar -->
+        <div class="wizard-steps">
+            <h3>Adımlar</h3>
+
+            <div class="step-item">
+                <span class="step-number">1</span>
+                <button class="step-button active" data-step="1">
+                    <i class="fas fa-turkish-lira-sign"></i> Temel Ücret
+                </button>
+            </div>
+
+            <div class="step-item">
+                <span class="step-number">2</span>
+                <button class="step-button" data-step="2">
+                    <i class="fas fa-clock"></i> Çalışma Bilgileri
+                </button>
+            </div>
+
+            <div class="step-item">
+                <span class="step-number">3</span>
+                <button class="step-button" data-step="3">
+                    <i class="fas fa-shield-alt"></i> Sosyal Güvenlik
+                </button>
+            </div>
+
+            <div class="step-item">
+                <span class="step-number">4</span>
+                <button class="step-button" data-step="4">
+                    <i class="fas fa-plus-square"></i> Özel Sigortalar
+                </button>
+            </div>
+
+            <div class="step-item">
+                <span class="step-number">5</span>
+                <button class="step-button" data-step="5">
+                    <i class="fas fa-user-clock"></i> Fazla Mesailer
+                </button>
+            </div>
+
+            <div class="step-item">
+                <span class="step-number">6</span>
+                <button class="step-button" data-step="6">
+                    <i class="fas fa-hand-holding-usd"></i> Ek Ödemeler
+                </button>
+            </div>
+
+            <div class="step-item">
+                <span class="step-number">7</span>
+                <button class="step-button" data-step="7">
+                    <i class="fas fa-cut"></i> Ek Kesintiler
+                </button>
+            </div>
+        </div>
+
+        <!-- Orta - Form Alanı -->
+        <div class="wizard-form">
+            <!-- ========== ADIM 1: TEMEL ÜCRET ========== -->
+            <div class="step-content active" id="step1">
+                <div class="form-header">
+                    Temel Ücret
+                </div>
+
+                <div class="form-toolbar">
+                    <select class="form-select" id="savedCalculations1">
+                        <option value="">-</option>
+                    </select>
+                    <button class="toolbar-btn green" title="Yeni"><i class="fas fa-plus"></i></button>
+                    <button class="toolbar-btn blue" title="Kaydet"><i class="fas fa-save"></i></button>
+                    <button class="toolbar-btn yellow" title="Düzenle"><i class="fas fa-edit"></i></button>
+                    <button class="toolbar-btn red" title="Sil"><i class="fas fa-trash"></i></button>
+                </div>
+
+                <div class="form-body">
+                    <div class="form-group">
+                        <label for="bordroDonemi">Bordro Dönemi</label>
+                        <div class="form-row">
+                            <select id="bordroAy" class="form-select">
+                                <option value="1">Ocak</option>
+                                <option value="2">Şubat</option>
+                                <option value="3" selected>Mart</option>
+                                <option value="4">Nisan</option>
+                                <option value="5">Mayıs</option>
+                                <option value="6">Haziran</option>
+                                <option value="7">Temmuz</option>
+                                <option value="8">Ağustos</option>
+                                <option value="9">Eylül</option>
+                                <option value="10">Ekim</option>
+                                <option value="11">Kasım</option>
+                                <option value="12">Aralık</option>
+                            </select>
+                            <select id="bordroYil" class="form-select">
+                                <option value="2026" selected>2026</option>
+                                <option value="2025">2025</option>
+                                <option value="2024">2024</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="aylikTemelUcret">Aylık Temel Ücret</label>
+                        <div class="form-row">
+                            <input type="text" id="aylikTemelUcret" class="form-control" value="33.030,00 ₺">
+                            <select id="ucretTipi" class="form-select">
+                                <option value="brut" selected>Brüt</option>
+                                <option value="net">Net</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Gelir Vergisi</label>
+                        <div class="toggle-container">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="gelirVergisi" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span class="toggle-label">Hesaplansın</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Damga Vergisi</label>
+                        <div class="toggle-container">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="damgaVergisi" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span class="toggle-label">Hesaplansın</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="engellilikDurumu">Engellilik Durumu</label>
+                        <select id="engellilikDurumu" class="form-select">
+                            <option value="normal" selected>Normal</option>
+                            <option value="1">1. Derece</option>
+                            <option value="2">2. Derece</option>
+                            <option value="3">3. Derece</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="yillikGvMatrahi">Yıllık GV Matrahı</label>
+                        <input type="text" id="yillikGvMatrahi" class="form-control" value="0,00 ₺">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="yillikAsgUcretGvMatrahi">Yıllık Asg. Ücret GV Matrahı</label>
+                        <input type="text" id="yillikAsgUcretGvMatrahi" class="form-control" value="0,00 ₺">
+                    </div>
+                </div>
+
+                <div class="form-footer">
+                    <button class="btn-calculate">
+                        <i class="fas fa-calculator"></i> Bordro Hesapla
+                    </button>
+                    <button class="btn-next" onclick="goToStep(2)">
+                        Sonraki Adım <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ========== ADIM 2: ÇALIŞMA BİLGİLERİ ========== -->
+            <div class="step-content" id="step2">
+                <div class="form-header">
+                    Çalışma Bilgileri
+                </div>
+
+                <div class="form-toolbar">
+                    <select class="form-select" id="savedCalculations2">
+                        <option value="">-</option>
+                    </select>
+                    <button class="toolbar-btn green" title="Yeni"><i class="fas fa-plus"></i></button>
+                    <button class="toolbar-btn blue" title="Kaydet"><i class="fas fa-save"></i></button>
+                    <button class="toolbar-btn yellow" title="Düzenle"><i class="fas fa-edit"></i></button>
+                    <button class="toolbar-btn red" title="Sil"><i class="fas fa-trash"></i></button>
+                </div>
+
+                <div class="form-body">
+                    <!-- Bordro Dönemi Bilgisi -->
+                    <div class="info-display-box">
+                        <div class="info-row">
+                            <span class="info-label">Bordro Dönemi</span>
+                            <span class="info-value" id="displayBordroDonemi">Mart / 2026</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Aylık Temel Ücret</span>
+                            <span class="info-value" id="displayAylikUcret">33.030,00 ₺ / Brüt</span>
+                        </div>
+                    </div>
+
+                    <!-- Bu Ay'daki Gün Sayısı -->
+                    <div class="form-group">
+                        <label>Bu Ay'daki Gün Sayısı</label>
+                        <select id="ayGunSayisi" class="form-select">
+                            <option value="28">28 Gün</option>
+                            <option value="29">29 Gün</option>
+                            <option value="30" selected>30 Gün</option>
+                            <option value="31">31 Gün</option>
+                        </select>
+                    </div>
+
+                    <div class="calculated-row">
+                        <span class="calc-label green">Günlük Temel Ücret</span>
+                        <span class="calc-value green" id="gunlukTemelUcret">1.101,00 ₺</span>
+                    </div>
+
+                    <!-- Çalışılan Gün -->
+                    <div class="form-group">
+                        <label>Çalışılan Gün</label>
+                        <div class="input-with-unit">
+                            <input type="number" id="calislanGun" class="form-control" value="30">
+                        </div>
+                    </div>
+
+                    <div class="calculated-row">
+                        <span class="calc-label green">Çalışılan Ücret</span>
+                        <span class="calc-value green" id="calislanUcret">33.030,00 ₺</span>
+                    </div>
+
+                    <!-- Eksik Saat -->
+                    <div class="form-group">
+                        <label>Eksik Saat</label>
+                        <div class="input-with-unit">
+                            <input type="text" id="eksikSaat" class="form-control" value="0,00">
+                        </div>
+                    </div>
+
+                    <div class="calculated-row">
+                        <span class="calc-label red">Eksik Saat Ücreti</span>
+                        <span class="calc-value red" id="eksikSaatUcreti">0,00 ₺</span>
+                    </div>
+
+                    <!-- Aylık Temel Ücret Sonuç -->
+                    <div class="calculated-row result">
+                        <span class="calc-label green">Aylık Temel Ücret</span>
+                        <span class="calc-value green" id="aylikTemelUcretSonuc">33.030,00 ₺</span>
+                    </div>
+                </div>
+
+                <div class="form-footer three-buttons">
+                    <button class="btn-prev" onclick="goToStep(1)">
+                        <i class="fas fa-arrow-left"></i> Önceki Adım
+                    </button>
+                    <button class="btn-calculate">
+                        <i class="fas fa-calculator"></i> Bordro Hesapla
+                    </button>
+                    <button class="btn-next" onclick="goToStep(3)">
+                        Sonraki Adım <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ========== ADIM 3: SOSYAL GÜVENLİK ========== -->
+            <div class="step-content" id="step3">
+                <div class="form-header">
+                    Sosyal Güvenlik
+                </div>
+
+                <div class="form-toolbar">
+                    <select class="form-select">
+                        <option value="">-</option>
+                    </select>
+                    <button class="toolbar-btn green" title="Yeni"><i class="fas fa-plus"></i></button>
+                    <button class="toolbar-btn blue" title="Kaydet"><i class="fas fa-save"></i></button>
+                    <button class="toolbar-btn yellow" title="Düzenle"><i class="fas fa-edit"></i></button>
+                    <button class="toolbar-btn red" title="Sil"><i class="fas fa-trash"></i></button>
+                </div>
+
+                <div class="form-body">
+                    <!-- Bordro Dönemi Bilgisi -->
+                    <div class="info-display-box">
+                        <div class="info-row">
+                            <span class="info-label">Bordro Dönemi</span>
+                            <span class="info-value">Mart / 2026</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Aylık Temel Ücret</span>
+                            <span class="info-value">33.030,00 ₺ / Brüt</span>
+                        </div>
+                    </div>
+
+                    <!-- Hesaplanmış Değerler -->
+                    <div class="calculated-box">
+                        <div class="calc-row">
+                            <span class="calc-label green">Çalışılan Ücret</span>
+                            <span class="calc-value green">33.030,00 ₺</span>
+                        </div>
+                        <div class="calc-row">
+                            <span class="calc-label red">Eksik Saat Ücreti</span>
+                            <span class="calc-value red">0,00 ₺</span>
+                        </div>
+                        <div class="calc-row">
+                            <span class="calc-label">Aylık Temel Ücret</span>
+                            <span class="calc-value">33.030,00 ₺</span>
+                        </div>
+                    </div>
+
+                    <!-- SGK Tipi -->
+                    <div class="form-group">
+                        <label>SGK Tipi</label>
+                        <select id="sgkTipi" class="form-select">
+                            <option value="01" selected>01-Hizmet Akdi ile Tüm Sigorta Kollarına Tabi Çalışanlar</option>
+                            <option value="02">02-Hizmet Akdi ile Çalışıp Emekli Olanlar</option>
+                            <option value="06">06-Yurtdışı Sigortalı</option>
+                            <option value="07">07-Uluslararası Sosyal Güvenlik Sözleşmesi Kapsamında Çalışanlar</option>
+                            <option value="13">13-Kanun Kapsamından Çıkan İşyerlerinde Çalışanlar</option>
+                        </select>
+                    </div>
+
+                    <!-- Kanun No -->
+                    <div class="form-group">
+                        <label>Kanun No</label>
+                        <select id="kanunNo" class="form-select">
+                            <option value="00000" selected>00000-Kanun Numarasız</option>
+                            <option value="05510">05510-5510 Sayılı Kanun</option>
+                            <option value="06111">06111-6111 Sayılı Kanun (Teşvik)</option>
+                            <option value="07103">07103-7103 Sayılı Kanun</option>
+                            <option value="07252">07252-7252 Sayılı Kanun</option>
+                        </select>
+                    </div>
+
+                    <!-- Hazine Yardımı -->
+                    <div class="form-group">
+                        <label>Hazine Yardımı</label>
+                        <div class="toggle-container">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="hazineYardimi" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span class="toggle-label">Hesaplansın</span>
+                        </div>
+                    </div>
+
+                    <!-- B.E.S. -->
+                    <div class="form-group">
+                        <label>B.E.S.</label>
+                        <div class="toggle-container">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="bes" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span class="toggle-label">Hesaplansın</span>
+                        </div>
+                    </div>
+
+                    <!-- Brüt Matrah (2 Önc. Ay) -->
+                    <div class="form-group">
+                        <label>Brüt Matrah (2 Önc. Ay)</label>
+                        <div class="input-with-unit">
+                            <input type="text" id="brutMatrah2Ay" class="form-control" value="0,00">
+                        </div>
+                    </div>
+
+                    <!-- Brüt Matrah (1 Önc. Ay) -->
+                    <div class="form-group">
+                        <label>Brüt Matrah (1 Önc. Ay)</label>
+                        <div class="input-with-unit">
+                            <input type="text" id="brutMatrah1Ay" class="form-control" value="0,00">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-footer three-buttons">
+                    <button class="btn-prev" onclick="goToStep(2)">
+                        <i class="fas fa-arrow-left"></i> Önceki Adım
+                    </button>
+                    <button class="btn-calculate">
+                        <i class="fas fa-calculator"></i> Bordro Hesapla
+                    </button>
+                    <button class="btn-next" onclick="goToStep(4)">
+                        Sonraki Adım <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ========== ADIM 4: ÖZEL SİGORTALAR ========== -->
+            <div class="step-content" id="step4">
+                <div class="form-header">
+                    Özel Sigortalar
+                </div>
+
+                <div class="form-toolbar">
+                    <select class="form-select">
+                        <option value="">-</option>
+                    </select>
+                    <button class="toolbar-btn green" title="Yeni"><i class="fas fa-plus"></i></button>
+                    <button class="toolbar-btn blue" title="Kaydet"><i class="fas fa-save"></i></button>
+                    <button class="toolbar-btn yellow" title="Düzenle"><i class="fas fa-edit"></i></button>
+                    <button class="toolbar-btn red" title="Sil"><i class="fas fa-trash"></i></button>
+                </div>
+
+                <div class="form-body">
+                    <!-- Bordro Dönemi Bilgisi -->
+                    <div class="info-display-box">
+                        <div class="info-row">
+                            <span class="info-label">Bordro Dönemi</span>
+                            <span class="info-value">Mart / 2026</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Aylık Temel Ücret</span>
+                            <span class="info-value">33.030,00 ₺ / Brüt</span>
+                        </div>
+                    </div>
+
+                    <!-- Hesaplanmış Değerler -->
+                    <div class="calculated-box">
+                        <div class="calc-row">
+                            <span class="calc-label green">Çalışılan Ücret</span>
+                            <span class="calc-value green">33.030,00 ₺</span>
+                        </div>
+                        <div class="calc-row">
+                            <span class="calc-label red">Eksik Saat Ücreti</span>
+                            <span class="calc-value red">0,00 ₺</span>
+                        </div>
+                        <div class="calc-row">
+                            <span class="calc-label">Aylık Temel Ücret</span>
+                            <span class="calc-value">33.030,00 ₺</span>
+                        </div>
+                    </div>
+
+                    <!-- Özel Sigorta Primleri Başlığı -->
+                    <div class="section-title">
+                        <h4>Özel Sigorta Primleri</h4>
+                    </div>
+
+                    <!-- Sağlık Sigortası İşçi Payı -->
+                    <div class="form-group">
+                        <label>Sağ. Sig. İşçi Payı</label>
+                        <div class="input-with-unit">
+                            <input type="text" id="sagSigIsciPayi" class="form-control" value="0,00">
+                            <span class="unit">₺</span>
+                        </div>
+                    </div>
+
+                    <!-- Sağlık Sigortası İşveren Payı -->
+                    <div class="form-group">
+                        <label>Sağ. Sig. İşv. Payı</label>
+                        <div class="input-with-unit">
+                            <input type="text" id="sagSigIsvPayi" class="form-control" value="0,00">
+                            <span class="unit">₺</span>
+                        </div>
+                    </div>
+
+                    <!-- Hayat Sigortası İşçi Payı -->
+                    <div class="form-group">
+                        <label>Hayat Sig. İşçi Payı</label>
+                        <div class="input-with-unit">
+                            <input type="text" id="hayatSigIsciPayi" class="form-control" value="0,00">
+                            <span class="unit">₺</span>
+                        </div>
+                    </div>
+
+                    <!-- Hayat Sigortası İşveren Payı -->
+                    <div class="form-group">
+                        <label>Hayat Sig. İşv. Payı</label>
+                        <div class="input-with-unit">
+                            <input type="text" id="hayatSigIsvPayi" class="form-control" value="0,00">
+                            <span class="unit">₺</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-footer three-buttons">
+                    <button class="btn-prev" onclick="goToStep(3)">
+                        <i class="fas fa-arrow-left"></i> Önceki Adım
+                    </button>
+                    <button class="btn-calculate">
+                        <i class="fas fa-calculator"></i> Bordro Hesapla
+                    </button>
+                    <button class="btn-next" onclick="goToStep(5)">
+                        Sonraki Adım <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ========== ADIM 5: FAZLA MESAİLER ========== -->
+            <div class="step-content" id="step5">
+                <div class="form-header">
+                    Fazla Mesailer
+                </div>
+
+                <div class="form-toolbar">
+                    <select class="form-select">
+                        <option value="">-</option>
+                    </select>
+                    <button class="toolbar-btn green" title="Yeni"><i class="fas fa-plus"></i></button>
+                    <button class="toolbar-btn blue" title="Kaydet"><i class="fas fa-save"></i></button>
+                    <button class="toolbar-btn yellow" title="Düzenle"><i class="fas fa-edit"></i></button>
+                    <button class="toolbar-btn red" title="Sil"><i class="fas fa-trash"></i></button>
+                </div>
+
+                <div class="form-body">
+                    <!-- Bordro Dönemi Bilgisi -->
+                    <div class="info-display-box">
+                        <div class="info-row">
+                            <span class="info-label">Bordro Dönemi</span>
+                            <span class="info-value">Mart / 2026</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Aylık Temel Ücret</span>
+                            <span class="info-value">33.030,00 ₺ / Brüt</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Saatlik Temel Ücret</span>
+                            <span class="info-value">146,80 ₺ / Brüt</span>
+                        </div>
+                    </div>
+
+                    <!-- Fazla Mesai Tablosu -->
+                    <div class="overtime-box">
+                        <!-- FM01 - %50 -->
+                        <div class="overtime-row">
+                            <div class="overtime-label">
+                                <span class="fm-code">FM01</span>
+                                <span class="fm-rate">(50,00 %)</span>
+                            </div>
+                            <div class="overtime-input">
+                                <input type="text" class="form-control" value="0,00">
+                                <span class="unit">saat</span>
+                            </div>
+                            <div class="overtime-result">
+                                <span>0,00 ₺</span>
+                            </div>
+                        </div>
+
+                        <!-- FM02 - %100 -->
+                        <div class="overtime-row">
+                            <div class="overtime-label">
+                                <span class="fm-code">FM02</span>
+                                <span class="fm-rate">(100,00 %)</span>
+                            </div>
+                            <div class="overtime-input">
+                                <input type="text" class="form-control" value="0,00">
+                                <span class="unit">saat</span>
+                            </div>
+                            <div class="overtime-result">
+                                <span>0,00 ₺</span>
+                            </div>
+                        </div>
+
+                        <!-- FM03 - %200 -->
+                        <div class="overtime-row">
+                            <div class="overtime-label">
+                                <span class="fm-code">FM03</span>
+                                <span class="fm-rate">(200,00 %)</span>
+                            </div>
+                            <div class="overtime-input">
+                                <input type="text" class="form-control" value="0,00">
+                                <span class="unit">saat</span>
+                            </div>
+                            <div class="overtime-result">
+                                <span>0,00 ₺</span>
+                            </div>
+                        </div>
+
+                        <!-- TOPLAM -->
+                        <div class="overtime-row total">
+                            <div class="overtime-label">
+                                <span class="fm-code total-label">TOPLAM</span>
+                            </div>
+                            <div class="overtime-input"></div>
+                            <div class="overtime-result">
+                                <span class="total-value">0,00 ₺</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-footer three-buttons">
+                    <button class="btn-prev" onclick="goToStep(4)">
+                        <i class="fas fa-arrow-left"></i> Önceki Adım
+                    </button>
+                    <button class="btn-calculate">
+                        <i class="fas fa-calculator"></i> Bordro Hesapla
+                    </button>
+                    <button class="btn-next" onclick="goToStep(6)">
+                        Sonraki Adım <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ========== ADIM 6: EK ÖDEMELER ========== -->
+            <div class="step-content" id="step6">
+                <div class="form-header">
+                    Ek Ödemeler
+                </div>
+
+                <div class="form-toolbar">
+                    <select class="form-select">
+                        <option value="">-</option>
+                    </select>
+                    <button class="toolbar-btn green" title="Yeni"><i class="fas fa-plus"></i></button>
+                    <button class="toolbar-btn blue" title="Kaydet"><i class="fas fa-save"></i></button>
+                    <button class="toolbar-btn yellow" title="Düzenle"><i class="fas fa-edit"></i></button>
+                    <button class="toolbar-btn red" title="Sil"><i class="fas fa-trash"></i></button>
+                </div>
+
+                <div class="form-body">
+                    <!-- Toplam Kutusu -->
+                    <div class="total-box">
+                        <div class="total-row">
+                            <span class="total-label">TOPLAM</span>
+                            <span class="total-value">0,00 ₺</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-footer three-buttons">
+                    <button class="btn-prev" onclick="goToStep(5)">
+                        <i class="fas fa-arrow-left"></i> Önceki Adım
+                    </button>
+                    <button class="btn-calculate">
+                        <i class="fas fa-calculator"></i> Bordro Hesapla
+                    </button>
+                    <button class="btn-next" onclick="goToStep(7)">
+                        Sonraki Adım <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- ========== ADIM 7: EK KESİNTİLER ========== -->
+            <div class="step-content" id="step7">
+                <div class="form-header">
+                    Ek Kesintiler
+                </div>
+
+                <div class="form-toolbar">
+                    <select class="form-select">
+                        <option value="">-</option>
+                    </select>
+                    <button class="toolbar-btn green" title="Yeni"><i class="fas fa-plus"></i></button>
+                    <button class="toolbar-btn blue" title="Kaydet"><i class="fas fa-save"></i></button>
+                    <button class="toolbar-btn yellow" title="Düzenle"><i class="fas fa-edit"></i></button>
+                    <button class="toolbar-btn red" title="Sil"><i class="fas fa-trash"></i></button>
+                </div>
+
+                <div class="form-body">
+                    <!-- Toplam Kutusu -->
+                    <div class="total-box">
+                        <div class="total-row">
+                            <span class="total-label">TOPLAM</span>
+                            <span class="total-value">0,00 ₺</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-footer two-buttons">
+                    <button class="btn-prev" onclick="goToStep(6)">
+                        <i class="fas fa-arrow-left"></i> Önceki Adım
+                    </button>
+                    <button class="btn-calculate">
+                        <i class="fas fa-calculator"></i> Bordro Hesapla
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sağ Taraf - Açıklamalar -->
+        <div class="wizard-explanations">
+            <h3>Açıklamalar</h3>
+            <p>
+                Herhangi bir adımda, <a href="#">Bordro Hesapla</a> butonuna basarak,
+                mevcut bilgiler ile hesaplama yapabilirsiniz. Girilmemiş bilgiler 
+                varsayılan değerleri ile dikkate alınır.
+            </p>
+            <p>
+                Daha fazla bilgi girmek için, <a href="#">Sonraki Adım</a> butonuna basınız.
+            </p>
+            <p>
+                <strong>Üye girişi yapmadan da hesaplama yapabilirsiniz.</strong> 
+                Ancak; özel sigortalar, fazla mesailer, ek ödemeler ve ek kesintiler 
+                girebilmek için kayıt butonu ile üye olup giriş yapmanız gerekmektedir.
+            </p>
+            <p>
+                <strong>Üye olmak ve üye olduktan sonra hesaplama yapmak ücretsizdir.</strong> 
+                Bordro sihirbazını süresiz olarak ücretsiz kullanabilirsiniz. Herhangi bir 
+                süre kısıtlaması yoktur.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

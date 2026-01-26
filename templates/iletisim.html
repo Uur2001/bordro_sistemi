@@ -1,0 +1,38 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}İletişim - Bordro Yönetim Sistemi{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="info-section">
+        <h2><i class="fas fa-envelope"></i> İletişim</h2>
+        <p>
+            Bizimle iletişime geçmek için aşağıdaki formu kullanabilir veya 
+            doğrudan e-posta adresimize yazabilirsiniz.
+        </p>
+        
+        <form class="mt-4">
+            <div class="mb-3">
+                <label for="name" class="form-label">Adınız Soyadınız</label>
+                <input type="text" class="form-control" id="name" required>
+            </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">E-posta Adresiniz</label>
+                <input type="email" class="form-control" id="email" required>
+            </div>
+            <div class="mb-3">
+                <label for="subject" class="form-label">Konu</label>
+                <input type="text" class="form-control" id="subject" required>
+            </div>
+            <div class="mb-3">
+                <label for="message" class="form-label">Mesajınız</label>
+                <textarea class="form-control" id="message" rows="5" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-paper-plane"></i> Gönder
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

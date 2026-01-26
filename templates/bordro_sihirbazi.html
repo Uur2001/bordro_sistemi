@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Bordro Sihirbazı - Bordro Yönetim Sistemi{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-nav rounded">
+        <a href="{% url 'home' %}"><i class="fas fa-home"></i></a>
+        <span>/</span>
+        <span>Hesaplamalar</span>
+        <span>/</span>
+        <span>Bordro Sihirbazı</span>
+    </nav>
+    
+    <!-- Başlık -->
+    <h1 class="page-title">Bordro Sihirbazı</h1>
+    
+    <!-- Seçim Kartları -->
+    <div class="selection-cards">
+        <a href="{% url 'aylik_hesapla' %}" class="selection-card">
+            <i class="fas fa-magic"></i>
+            <span>Aylık Hesapla</span>
+        </a>
+        <a href="{% url 'yillik_hesapla' %}" class="selection-card">
+            <i class="fas fa-magic"></i>
+            <span>Yıllık Hesapla</span>
+        </a>
+    </div>
+</div>
+{% endblock %}

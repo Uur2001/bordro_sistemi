@@ -1,0 +1,256 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Kıdem ve İhbar Tazminatları - Bordro Yönetim Sistemi{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-nav rounded">
+        <a href="{% url 'home' %}"><i class="fas fa-home"></i></a>
+        <span>/</span>
+        <span>Hesaplamalar</span>
+        <span>/</span>
+        <span>Kıdem ve İhbar Tazminatları</span>
+    </nav>
+    
+    <!-- Toolbar -->
+    <div class="tazminat-toolbar">
+        <select class="form-select toolbar-select" id="savedCalculations">
+            <option value="">-</option>
+        </select>
+        <button class="toolbar-btn green" title="Yeni"><i class="fas fa-plus"></i></button>
+        <button class="toolbar-btn blue" title="Kaydet"><i class="fas fa-save"></i></button>
+        <button class="toolbar-btn yellow" title="Düzenle"><i class="fas fa-edit"></i></button>
+        <button class="toolbar-btn red" title="Sil"><i class="fas fa-trash"></i></button>
+        <button class="toolbar-btn teal" title="Hesapla" id="btnHesapla">
+            <i class="fas fa-calculator"></i> Hesapla
+        </button>
+        <button class="toolbar-btn pdf" title="PDF Bordro">
+            <i class="fas fa-file-pdf"></i> PDF Bordro
+        </button>
+        <button class="toolbar-btn help" title="Yardım"><i class="fas fa-question"></i></button>
+    </div>
+    
+    <!-- Ana İçerik -->
+    <div class="tazminat-container">
+        <!-- Sol Taraf - Giriş Alanları -->
+        <div class="tazminat-left">
+            <!-- Tazminata Esas Süre -->
+            <div class="tazminat-card">
+                <div class="tazminat-card-header teal-header">
+                    <h3>Tazminata Esas Süre</h3>
+                </div>
+                <div class="tazminat-card-body">
+                    <div class="tazminat-row three-col">
+                        <div class="tazminat-field">
+                            <label>Giriş Tarihi</label>
+                            <input type="date" id="girisTarihi" class="form-control" value="2026-01-20">
+                        </div>
+                        <div class="tazminat-field">
+                            <label>Çıkış Tarihi</label>
+                            <input type="date" id="cikisTarihi" class="form-control" value="2026-01-20">
+                        </div>
+                        <div class="tazminat-field">
+                            <label>Kıdem Dışı Süre</label>
+                            <div class="input-with-suffix">
+                                <input type="number" id="kidemDisiSure" class="form-control" value="0">
+                                <span class="input-suffix">gün</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tazminata Esas Ücretler -->
+            <div class="tazminat-card">
+                <div class="tazminat-card-header teal-header">
+                    <h3>Tazminata Esas Ücretler</h3>
+                </div>
+                <div class="tazminat-card-body">
+                    <div class="tazminat-row three-col">
+                        <div class="tazminat-field">
+                            <label>Aylık Brüt Ücret</label>
+                            <div class="input-with-suffix">
+                                <input type="text" id="aylikBrutUcret" class="form-control money-input" value="33.030,00">
+                                <span class="input-suffix">₺</span>
+                            </div>
+                        </div>
+                        <div class="tazminat-field">
+                            <label>Aylık Brüt Ek Ücr.</label>
+                            <div class="input-with-suffix">
+                                <input type="text" id="aylikBrutEkUcret" class="form-control money-input" value="0,00">
+                                <span class="input-suffix">₺</span>
+                            </div>
+                        </div>
+                        <div class="tazminat-field">
+                            <label>Yıllık Brüt İkramiye</label>
+                            <div class="input-with-suffix">
+                                <input type="text" id="yillikBrutIkramiye" class="form-control money-input" value="0,00">
+                                <span class="input-suffix">₺</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tazminat-row three-col">
+                        <div class="tazminat-field">
+                            <label>Yıllık G.V. Matrahı</label>
+                            <div class="input-with-suffix">
+                                <input type="text" id="yillikGvMatrahi" class="form-control money-input" value="0,00">
+                                <span class="input-suffix">₺</span>
+                            </div>
+                        </div>
+                        <div class="tazminat-field">
+                            <label>Aylık Giy. Brüt Ücr.</label>
+                            <div class="input-with-suffix">
+                                <input type="text" id="aylikGiyBrutUcret" class="form-control money-input" value="33.030,00">
+                                <span class="input-suffix">₺</span>
+                            </div>
+                        </div>
+                        <div class="tazminat-field">
+                            <label>Kıdem Tazm.Tavanı</label>
+                            <div class="input-with-suffix">
+                                <input type="text" id="kidemTazmTavani" class="form-control money-input" value="64.948,77" readonly>
+                                <span class="input-suffix">₺</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Hesaplama Parametreleri -->
+            <div class="tazminat-card">
+                <div class="tazminat-card-header dark-header">
+                    <h3>Hesaplama Parametreleri</h3>
+                </div>
+                <div class="tazminat-card-body light-bg">
+                    <div class="param-row">
+                        <span class="param-label">İhbar Tazminatı</span>
+                        <div class="param-toggle">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="ihbarTazminati" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span class="toggle-text">Hesaplansın</span>
+                        </div>
+                    </div>
+                    <div class="param-row">
+                        <span class="param-label">İhbar Tazminatı Gelir Vergisi</span>
+                        <div class="param-toggle">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="ihbarGelirVergisi" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span class="toggle-text">Hesaplansın</span>
+                        </div>
+                    </div>
+                    <div class="param-row">
+                        <span class="param-label">İhbar Tazminatı Damga Vergisi</span>
+                        <div class="param-toggle">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="ihbarDamgaVergisi" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span class="toggle-text">Hesaplansın</span>
+                        </div>
+                    </div>
+                    <div class="param-row">
+                        <span class="param-label">Kıdem Tazminatı Damga Vergisi</span>
+                        <div class="param-toggle">
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="kidemDamgaVergisi" checked>
+                                <span class="toggle-slider"></span>
+                            </label>
+                            <span class="toggle-text">Hesaplansın</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sağ Taraf - Sonuç Tabloları -->
+        <div class="tazminat-right">
+            <!-- Kıdem Tazminatı Tablosu -->
+            <div class="result-table">
+                <div class="result-header green-header">
+                    <span class="col-name">Kıd. Taz.</span>
+                    <span class="col-adet">Adet</span>
+                    <span class="col-birim">Bir.Tut.</span>
+                    <span class="col-tutar">Tutar</span>
+                </div>
+                <div class="result-row">
+                    <span class="col-name">Yıl</span>
+                    <span class="col-adet" id="kidemYil">0</span>
+                    <span class="col-birim" id="kidemYilBirim"></span>
+                    <span class="col-tutar" id="kidemYilTutar"></span>
+                </div>
+                <div class="result-row">
+                    <span class="col-name">Ay</span>
+                    <span class="col-adet" id="kidemAy">0</span>
+                    <span class="col-birim" id="kidemAyBirim"></span>
+                    <span class="col-tutar" id="kidemAyTutar"></span>
+                </div>
+                <div class="result-row">
+                    <span class="col-name">Gün</span>
+                    <span class="col-adet" id="kidemGun">0</span>
+                    <span class="col-birim" id="kidemGunBirim"></span>
+                    <span class="col-tutar" id="kidemGunTutar"></span>
+                </div>
+                <div class="result-row total-row">
+                    <span class="col-name">Brüt Kıdem Tazminatı</span>
+                    <span class="col-adet"></span>
+                    <span class="col-birim"></span>
+                    <span class="col-tutar" id="brutKidemTazminati">0,00 ₺</span>
+                </div>
+            </div>
+            
+            <!-- İhbar Tazminatı Tablosu -->
+            <div class="result-table">
+                <div class="result-header blue-header">
+                    <span class="col-name">İhbar Taz.</span>
+                    <span class="col-gun">Gün</span>
+                    <span class="col-tutar-wide">Tutar</span>
+                </div>
+                <div class="result-row">
+                    <span class="col-name">Aylık Giy. Brüt Ücr.</span>
+                    <span class="col-gun" id="ihbarAylikGun">30</span>
+                    <span class="col-tutar-wide" id="ihbarAylikTutar">33.030,00 ₺</span>
+                </div>
+                <div class="result-row">
+                    <span class="col-name">Günlük Brüt Ücret</span>
+                    <span class="col-gun" id="ihbarGunlukGun">1</span>
+                    <span class="col-tutar-wide" id="ihbarGunlukTutar">1.101,00 ₺</span>
+                </div>
+                <div class="result-row total-row">
+                    <span class="col-name">Brüt İhbar Tazm.</span>
+                    <span class="col-gun" id="ihbarToplamGun">14</span>
+                    <span class="col-tutar-wide" id="brutIhbarTazminati">15.414,00 ₺</span>
+                </div>
+            </div>
+            
+            <!-- Toplamlar Tablosu -->
+            <div class="result-table">
+                <div class="result-header purple-header">
+                    <span class="col-name-wide">Toplamlar</span>
+                    <span class="col-tutar-end">Tutar</span>
+                </div>
+                <div class="result-row">
+                    <span class="col-name-wide">Brüt Tazminat Toplamı</span>
+                    <span class="col-tutar-end" id="brutTazminatToplami">15.414,00 ₺</span>
+                </div>
+                <div class="result-row">
+                    <span class="col-name-wide">Gelir Vergisi (-)</span>
+                    <span class="col-tutar-end" id="gelirVergisi">2.312,10 ₺</span>
+                </div>
+                <div class="result-row">
+                    <span class="col-name-wide">Damga Vergisi (-)</span>
+                    <span class="col-tutar-end" id="damgaVergisi">116,99 ₺</span>
+                </div>
+                <div class="result-row total-row">
+                    <span class="col-name-wide">Net Tazminat Toplamı</span>
+                    <span class="col-tutar-end" id="netTazminatToplami">12.984,91 ₺</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

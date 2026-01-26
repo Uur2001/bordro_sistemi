@@ -1,0 +1,567 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Yıllık Bordro Hesaplama - Bordro Yönetim Sistemi{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb-nav rounded">
+        <a href="{% url 'home' %}"><i class="fas fa-home"></i></a>
+        <span>/</span>
+        <a href="{% url 'bordro_sihirbazi' %}">Hesaplamalar</a>
+        <span>/</span>
+        <span>Bordro Sihirbazı (Yıllık)</span>
+    </nav>
+
+    <!-- Toolbar -->
+    <div class="yillik-toolbar">
+        <div class="toolbar-left">
+            <select class="form-select toolbar-select" id="savedCalculations">
+                <option value="">-</option>
+            </select>
+            <button class="toolbar-btn green" title="Yeni"><i class="fas fa-plus"></i></button>
+            <button class="toolbar-btn blue" title="Kaydet"><i class="fas fa-save"></i></button>
+            <button class="toolbar-btn yellow" title="Düzenle"><i class="fas fa-edit"></i></button>
+            <button class="toolbar-btn red" title="Sil"><i class="fas fa-trash"></i></button>
+        </div>
+        <div class="toolbar-right">
+            <button class="toolbar-btn blue" title="Yenile"><i class="fas fa-sync-alt"></i></button>
+            <button class="toolbar-btn red" title="Yardım"><i class="fas fa-question"></i></button>
+        </div>
+    </div>
+
+    <!-- Ana İçerik -->
+    <div class="yillik-container">
+        <!-- Sol Panel - Adımlar -->
+        <div class="yillik-sidebar">
+            <div class="sidebar-header">
+                <i class="fas fa-magic"></i>
+                <span>Bordro Sihirbazı</span>
+            </div>
+
+            <div class="steps-list">
+                <div class="step-item">
+                    <span class="step-number">1</span>
+                    <button class="step-button active" data-step="1">
+                        <i class="fas fa-turkish-lira-sign"></i> Temel Ücret
+                    </button>
+                </div>
+
+                <div class="step-item">
+                    <span class="step-number">2</span>
+                    <button class="step-button" data-step="2">
+                        <i class="fas fa-user-friends"></i> AGİ
+                    </button>
+                </div>
+
+                <div class="step-item">
+                    <span class="step-number">3</span>
+                    <button class="step-button" data-step="3">
+                        <i class="fas fa-clock"></i> Çalışma Bilgileri
+                    </button>
+                </div>
+
+                <div class="step-item">
+                    <span class="step-number">4</span>
+                    <button class="step-button" data-step="4">
+                        <i class="fas fa-shield-alt"></i> Sosyal Güvenlik
+                    </button>
+                </div>
+
+                <div class="step-item">
+                    <span class="step-number">5</span>
+                    <button class="step-button" data-step="5">
+                        <i class="fas fa-plus-square"></i> Özel Sigortalar
+                    </button>
+                </div>
+
+                <div class="step-item">
+                    <span class="step-number">6</span>
+                    <button class="step-button" data-step="6">
+                        <i class="fas fa-user-clock"></i> Fazla Mesailer
+                    </button>
+                </div>
+
+                <div class="step-item">
+                    <span class="step-number">7</span>
+                    <button class="step-button" data-step="7">
+                        <i class="fas fa-child"></i> Çocuk Yardımı
+                    </button>
+                </div>
+
+                <div class="step-item">
+                    <span class="step-number">8</span>
+                    <button class="step-button" data-step="8">
+                        <i class="fas fa-utensils"></i> Yemek Yardımı
+                    </button>
+                </div>
+
+                <div class="step-item">
+                    <span class="step-number">9</span>
+                    <button class="step-button" data-step="9">
+                        <i class="fas fa-hand-holding-usd"></i> Ek Ödemeler
+                    </button>
+                </div>
+
+                <div class="step-item">
+                    <span class="step-number">10</span>
+                    <button class="step-button" data-step="10">
+                        <i class="fas fa-cut"></i> Ek Kesintiler
+                    </button>
+                </div>
+            </div>
+
+            <div class="sidebar-footer">
+                <label class="checkbox-container">
+                    <input type="checkbox" id="kopyalaCheckbox" checked>
+                    <span class="checkmark"></span>
+                    Verileri Sonraki Aylara Da Kopyala
+                </label>
+            </div>
+        </div>
+
+        <!-- Sağ Panel - Form Alanı -->
+        <div class="yillik-main">
+            <!-- Üst Bilgi Kutuları -->
+            <div class="info-boxes">
+                <div class="info-box">
+                    <label>Bordro Yılı</label>
+                    <select id="bordroYili" class="form-select">
+                        <option value="2026">2026</option>
+                        <option value="2025">2025</option>
+                        <option value="2024">2024</option>
+                    </select>
+                </div>
+                <div class="info-box">
+                    <label>GV Matrahı</label>
+                    <div class="info-input">
+                        <input type="text" id="gvMatrahi" class="form-control" value="0,00">
+                        <span class="currency">₺</span>
+                    </div>
+                </div>
+                <div class="info-box">
+                    <label>Asg. Ücr. GV Mat.</label>
+                    <div class="info-input">
+                        <input type="text" id="asgUcrGvMat" class="form-control" value="0,00">
+                        <span class="currency">₺</span>
+                    </div>
+                </div>
+                <div class="info-box">
+                    <label>SGK Mat. (2 önc. ay)</label>
+                    <div class="info-input">
+                        <input type="text" id="sgkMat2" class="form-control" value="0,00">
+                        <span class="currency">₺</span>
+                    </div>
+                </div>
+                <div class="info-box">
+                    <label>SGK Mat. (1 önc. ay)</label>
+                    <div class="info-input">
+                        <input type="text" id="sgkMat1" class="form-control" value="0,00">
+                        <span class="currency">₺</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Aylık Tablo -->
+            <div class="monthly-table">
+                <div class="table-header">
+                    <div class="col-ay">Ay</div>
+                    <div class="col-ucret">Ücret</div>
+                    <div class="col-tipi">Tipi</div>
+                    <div class="col-gv">GV</div>
+                    <div class="col-dv">DV</div>
+                    <div class="col-engellilik">Engellilik</div>
+                </div>
+
+                <div class="table-body">
+                    <!-- 1. Ocak -->
+                    <div class="table-row">
+                        <div class="col-ay"><strong>1.</strong> Ocak</div>
+                        <div class="col-ucret">
+                            <div class="input-with-currency">
+                                <input type="text" class="form-control money-input" value="33.030,00">
+                                <span>₺</span>
+                            </div>
+                        </div>
+                        <div class="col-tipi">
+                            <select class="form-select">
+                                <option value="brut">Brüt</option>
+                                <option value="net">Net</option>
+                            </select>
+                        </div>
+                        <div class="col-gv">
+                            <input type="checkbox" class="form-check-input" checked>
+                        </div>
+                        <div class="col-dv">
+                            <input type="checkbox" class="form-check-input" checked>
+                        </div>
+                        <div class="col-engellilik">
+                            <select class="form-select">
+                                <option value="normal">Normal</option>
+                                <option value="1">1. Derece</option>
+                                <option value="2">2. Derece</option>
+                                <option value="3">3. Derece</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 2. Şubat -->
+                    <div class="table-row">
+                        <div class="col-ay"><strong>2.</strong> Şubat</div>
+                        <div class="col-ucret">
+                            <div class="input-with-currency">
+                                <input type="text" class="form-control money-input" value="33.030,00">
+                                <span>₺</span>
+                            </div>
+                        </div>
+                        <div class="col-tipi">
+                            <select class="form-select">
+                                <option value="brut">Brüt</option>
+                                <option value="net">Net</option>
+                            </select>
+                        </div>
+                        <div class="col-gv">
+                            <input type="checkbox" class="form-check-input" checked>
+                        </div>
+                        <div class="col-dv">
+                            <input type="checkbox" class="form-check-input" checked>
+                        </div>
+                        <div class="col-engellilik">
+                            <select class="form-select">
+                                <option value="normal">Normal</option>
+                                <option value="1">1. Derece</option>
+                                <option value="2">2. Derece</option>
+                                <option value="3">3. Derece</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 3. Mart -->
+                    <div class="table-row">
+                        <div class="col-ay"><strong>3.</strong> Mart</div>
+                        <div class="col-ucret">
+                            <div class="input-with-currency">
+                                <input type="text" class="form-control money-input" value="33.030,00">
+                                <span>₺</span>
+                            </div>
+                        </div>
+                        <div class="col-tipi">
+                            <select class="form-select">
+                                <option value="brut">Brüt</option>
+                                <option value="net">Net</option>
+                            </select>
+                        </div>
+                        <div class="col-gv">
+                            <input type="checkbox" class="form-check-input" checked>
+                        </div>
+                        <div class="col-dv">
+                            <input type="checkbox" class="form-check-input" checked>
+                        </div>
+                        <div class="col-engellilik">
+                            <select class="form-select">
+                                <option value="normal">Normal</option>
+                                <option value="1">1. Derece</option>
+                                <option value="2">2. Derece</option>
+                                <option value="3">3. Derece</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 4. Nisan -->
+                    <div class="table-row">
+                        <div class="col-ay"><strong>4.</strong> Nisan</div>
+                        <div class="col-ucret">
+                            <div class="input-with-currency">
+                                <input type="text" class="form-control money-input" value="33.030,00">
+                                <span>₺</span>
+                            </div>
+                        </div>
+                        <div class="col-tipi">
+                            <select class="form-select">
+                                <option value="brut">Brüt</option>
+                                <option value="net">Net</option>
+                            </select>
+                        </div>
+                        <div class="col-gv">
+                            <input type="checkbox" class="form-check-input" checked>
+                        </div>
+                        <div class="col-dv">
+                            <input type="checkbox" class="form-check-input" checked>
+                        </div>
+                        <div class="col-engellilik">
+                            <select class="form-select">
+                                <option value="normal">Normal</option>
+                                <option value="1">1. Derece</option>
+                                <option value="2">2. Derece</option>
+                                <option value="3">3. Derece</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 5. Mayıs -->
+                    <div class="table-row">
+                        <div class="col-ay"><strong>5.</strong> Mayıs</div>
+                        <div class="col-ucret">
+                            <div class="input-with-currency">
+                                <input type="text" class="form-control money-input" value="33.030,00">
+                                <span>₺</span>
+                            </div>
+                        </div>
+                        <div class="col-tipi">
+                            <select class="form-select">
+                                <option value="brut">Brüt</option>
+                                <option value="net">Net</option>
+                            </select>
+                        </div>
+                        <div class="col-gv">
+                            <input type="checkbox" class="form-check-input" checked>
+                        </div>
+                        <div class="col-dv">
+                            <input type="checkbox" class="form-check-input" checked>
+                        </div>
+                        <div class="col-engellilik">
+                            <select class="form-select">
+                                <option value="normal">Normal</option>
+                                <option value="1">1. Derece</option>
+                                <option value="2">2. Derece</option>
+                                <option value="3">3. Derece</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 6. Haziran -->
+                    <div class="table-row">
+                        <div class="col-ay"><strong>6.</strong> Haziran</div>
+                        <div class="col-ucret">
+                            <div class="input-with-currency">
+                                <input type="text" class="form-control money-input" value="33.030,00">
+                                <span>₺</span>
+                            </div>
+                        </div>
+                        <div class="col-tipi">
+                            <select class="form-select">
+                                <option value="brut">Brüt</option>
+                                <option value="net">Net</option>
+                            </select>
+                        </div>
+                        <div class="col-gv">
+                            <input type="checkbox" class="form-check-input" checked>
+                        </div>
+                        <div class="col-dv">
+                            <input type="checkbox" class="form-check-input" checked>
+                        </div>
+                        <div class="col-engellilik">
+                            <select class="form-select">
+                                <option value="normal">Normal</option>
+                                <option value="1">1. Derece</option>
+                                <option value="2">2. Derece</option>
+                                <option value="3">3. Derece</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 7. Temmuz -->
+                    <div class="table-row">
+                        <div class="col-ay"><strong>7.</strong> Temmuz</div>
+                        <div class="col-ucret">
+                            <div class="input-with-currency">
+                                <input type="text" class="form-control money-input" value="33.030,00">
+                                <span>₺</span>
+                            </div>
+                        </div>
+                        <div class="col-tipi">
+                            <select class="form-select">
+                                <option value="brut">Brüt</option>
+                                <option value="net">Net</option>
+                            </select>
+                        </div>
+                        <div class="col-gv">
+                            <input type="checkbox" class="form-check-input" checked>
+                        </div>
+                        <div class="col-dv">
+                            <input type="checkbox" class="form-check-input" checked>
+                        </div>
+                        <div class="col-engellilik">
+                            <select class="form-select">
+                                <option value="normal">Normal</option>
+                                <option value="1">1. Derece</option>
+                                <option value="2">2. Derece</option>
+                                <option value="3">3. Derece</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 8. Ağustos -->
+                    <div class="table-row">
+                        <div class="col-ay"><strong>8.</strong> Ağustos</div>
+                        <div class="col-ucret">
+                            <div class="input-with-currency">
+                                <input type="text" class="form-control money-input" value="33.030,00">
+                                <span>₺</span>
+                            </div>
+                        </div>
+                        <div class="col-tipi">
+                            <select class="form-select">
+                                <option value="brut">Brüt</option>
+                                <option value="net">Net</option>
+                            </select>
+                        </div>
+                        <div class="col-gv">
+                            <input type="checkbox" class="form-check-input" checked>
+                        </div>
+                        <div class="col-dv">
+                            <input type="checkbox" class="form-check-input" checked>
+                        </div>
+                        <div class="col-engellilik">
+                            <select class="form-select">
+                                <option value="normal">Normal</option>
+                                <option value="1">1. Derece</option>
+                                <option value="2">2. Derece</option>
+                                <option value="3">3. Derece</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 9. Eylül -->
+                    <div class="table-row">
+                        <div class="col-ay"><strong>9.</strong> Eylül</div>
+                        <div class="col-ucret">
+                            <div class="input-with-currency">
+                                <input type="text" class="form-control money-input" value="33.030,00">
+                                <span>₺</span>
+                            </div>
+                        </div>
+                        <div class="col-tipi">
+                            <select class="form-select">
+                                <option value="brut">Brüt</option>
+                                <option value="net">Net</option>
+                            </select>
+                        </div>
+                        <div class="col-gv">
+                            <input type="checkbox" class="form-check-input" checked>
+                        </div>
+                        <div class="col-dv">
+                            <input type="checkbox" class="form-check-input" checked>
+                        </div>
+                        <div class="col-engellilik">
+                            <select class="form-select">
+                                <option value="normal">Normal</option>
+                                <option value="1">1. Derece</option>
+                                <option value="2">2. Derece</option>
+                                <option value="3">3. Derece</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 10. Ekim -->
+                    <div class="table-row">
+                        <div class="col-ay"><strong>10.</strong> Ekim</div>
+                        <div class="col-ucret">
+                            <div class="input-with-currency">
+                                <input type="text" class="form-control money-input" value="33.030,00">
+                                <span>₺</span>
+                            </div>
+                        </div>
+                        <div class="col-tipi">
+                            <select class="form-select">
+                                <option value="brut">Brüt</option>
+                                <option value="net">Net</option>
+                            </select>
+                        </div>
+                        <div class="col-gv">
+                            <input type="checkbox" class="form-check-input" checked>
+                        </div>
+                        <div class="col-dv">
+                            <input type="checkbox" class="form-check-input" checked>
+                        </div>
+                        <div class="col-engellilik">
+                            <select class="form-select">
+                                <option value="normal">Normal</option>
+                                <option value="1">1. Derece</option>
+                                <option value="2">2. Derece</option>
+                                <option value="3">3. Derece</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 11. Kasım -->
+                    <div class="table-row">
+                        <div class="col-ay"><strong>11.</strong> Kasım</div>
+                        <div class="col-ucret">
+                            <div class="input-with-currency">
+                                <input type="text" class="form-control money-input" value="33.030,00">
+                                <span>₺</span>
+                            </div>
+                        </div>
+                        <div class="col-tipi">
+                            <select class="form-select">
+                                <option value="brut">Brüt</option>
+                                <option value="net">Net</option>
+                            </select>
+                        </div>
+                        <div class="col-gv">
+                            <input type="checkbox" class="form-check-input" checked>
+                        </div>
+                        <div class="col-dv">
+                            <input type="checkbox" class="form-check-input" checked>
+                        </div>
+                        <div class="col-engellilik">
+                            <select class="form-select">
+                                <option value="normal">Normal</option>
+                                <option value="1">1. Derece</option>
+                                <option value="2">2. Derece</option>
+                                <option value="3">3. Derece</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 12. Aralık -->
+                    <div class="table-row">
+                        <div class="col-ay"><strong>12.</strong> Aralık</div>
+                        <div class="col-ucret">
+                            <div class="input-with-currency">
+                                <input type="text" class="form-control money-input" value="33.030,00">
+                                <span>₺</span>
+                            </div>
+                        </div>
+                        <div class="col-tipi">
+                            <select class="form-select">
+                                <option value="brut">Brüt</option>
+                                <option value="net">Net</option>
+                            </select>
+                        </div>
+                        <div class="col-gv">
+                            <input type="checkbox" class="form-check-input" checked>
+                        </div>
+                        <div class="col-dv">
+                            <input type="checkbox" class="form-check-input" checked>
+                        </div>
+                        <div class="col-engellilik">
+                            <select class="form-select">
+                                <option value="normal">Normal</option>
+                                <option value="1">1. Derece</option>
+                                <option value="2">2. Derece</option>
+                                <option value="3">3. Derece</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Alt Butonlar -->
+            <div class="form-actions">
+                <button class="btn-prev">
+                    <i class="fas fa-arrow-left"></i> Önceki Adım
+                </button>
+                <button class="btn-calculate-main">
+                    <i class="fas fa-calculator"></i> Bordro Hesapla
+                </button>
+                <button class="btn-next">
+                    Sonraki Adım <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
