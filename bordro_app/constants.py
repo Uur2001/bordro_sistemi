@@ -1,94 +1,47 @@
-"""
-Bordro Hesaplama Sistemi - Sabit Parametreler
-2026 Yılı Değerleri
+ASGARI_UCRET_BRUT = 33030.00
+ASGARI_UCRET_GUNLUK = 1101.00
+ASGARI_UCRET_SAATLIK = 146.80
 
-Bu dosya tüm bordro hesaplamalarında kullanılan
-sabit değerleri içerir. Yıl değiştiğinde sadece
-bu dosyayı güncellemeniz yeterlidir.
-"""
+AYLIK_GUN = 30
+AYLIK_SAAT = 225
+HAFTALIK_SAAT = 45
 
-# ==========================================
-# ASGARİ ÜCRET (2026)
-# ==========================================
-ASGARI_UCRET_BRUT = 33030.00  # Aylık Brüt Asgari Ücret
-ASGARI_UCRET_GUNLUK = 1101.00  # Günlük Brüt (33030 / 30)
-ASGARI_UCRET_SAATLIK = 146.80  # Saatlik Brüt (33030 / 225)
+SGK_ISCI_ORANI = 14.00
+SGK_ISVEREN_ORANI = 19.50
+SGK_ISVEREN_TEHLIKELI = 20.50
+SGK_KVSK_ORANI = 2.25
+ISSIZLIK_ISCI_ORANI = 1.00
+ISSIZLIK_ISVEREN_ORANI = 2.00
+BES_ORANI = 3.00
+HAZINE_YARDIMI_ORANI = 2.00
 
-# ==========================================
-# ÇALIŞMA SÜRELERİ
-# ==========================================
-AYLIK_GUN = 30  # Aylık gün sayısı (sabit)
-AYLIK_SAAT = 225  # Aylık çalışma saati (45 saat x 5 gün x 30/7)
-HAFTALIK_SAAT = 45  # Haftalık çalışma saati
+SGK_TABAN = ASGARI_UCRET_BRUT
+SGK_TAVAN_KATSAYI = 9
+SGK_TAVAN = ASGARI_UCRET_BRUT * SGK_TAVAN_KATSAYI
 
-# ==========================================
-# SGK ORANLARI (%)
-# ==========================================
-SGK_ISCI_ORANI = 14.00  # İşçi SGK primi
-SGK_ISVEREN_ORANI = 19.50  # İşveren SGK primi (normal)
-SGK_ISVEREN_TEHLIKELI = 20.50  # İşveren SGK primi (tehlikeli iş)
-SGK_KVSK_ORANI = 2.25  # Kısa vadeli sigorta kolları (işveren)
-ISSIZLIK_ISCI_ORANI = 1.00  # İşçi işsizlik sigortası
-ISSIZLIK_ISVEREN_ORANI = 2.00  # İşveren işsizlik sigortası
-BES_ORANI = 3.00  # Bireysel Emeklilik Sistemi (otomatik katılım)
-HAZINE_YARDIMI_ORANI = 2.00  # 5 puanlık hazine yardımı
-
-# SGK Taban ve Tavan
-SGK_TABAN = ASGARI_UCRET_BRUT  # SGK matrah tabanı = Asgari ücret
-SGK_TAVAN_KATSAYI = 9  # Tavan = Asgari Ücret x 7.5
-SGK_TAVAN = ASGARI_UCRET_BRUT * SGK_TAVAN_KATSAYI  # 247.725 TL
-
-# ==========================================
-# GELİR VERGİSİ DİLİMLERİ (2026)
-# ==========================================
-# Her dilim: (üst_limit, oran)
-# Son dilim için üst limit None (sınırsız)
 GELIR_VERGISI_DILIMLERI = [
-    (190000.00, 15.00),   # 0 - 190.000 TL arası %15
-    (400000.00, 20.00),   # 190.001 - 400.000 TL arası %20
-    (1500000.00, 27.00),  # 400.001 - 1.500.000 TL arası %27
-    (5300000.00, 35.00),  # 1.500.001 - 5.300.000 TL arası %35
-    (None, 40.00),        # 5.300.001 TL ve üzeri %40
+    (190000.00, 15.00),
+    (400000.00, 20.00),
+    (1500000.00, 27.00),
+    (5300000.00, 35.00),
+    (None, 40.00),
 ]
+DAMGA_VERGISI_ORANI = 0.759
 
-# ==========================================
-# DAMGA VERGİSİ
-# ==========================================
-DAMGA_VERGISI_ORANI = 0.759  # Binde 7.59 = %0.759
-
-# ==========================================
-# ÖZEL SİGORTA İNDİRİM LİMİTLERİ
-# ==========================================
-# Sağlık sigortası: Brüt ücretin %15'ini geçemez
 SAGLIK_SIGORTA_INDIRIM_ORANI = 15.00
-
-# Hayat sigortası: Ödenen primin %50'si indirilebilir
 HAYAT_SIGORTA_INDIRIM_ORANI = 50.00
-
-# Yıllık toplam limit: Yıllık asgari ücret toplamı
 YILLIK_SIGORTA_INDIRIM_LIMIT = ASGARI_UCRET_BRUT * 12
 
-# ==========================================
-# FAZLA MESAİ ORANLARI (%)
-# ==========================================
 FAZLA_MESAI_ORANLARI = {
-    'FM01': 50.00,   # Normal fazla mesai (%50 zamlı)
-    'FM02': 100.00,  # Hafta sonu mesaisi (%100 zamlı)
-    'FM03': 200.00,  # Resmi tatil mesaisi (%200 zamlı)
+    'FM01': 50.00,
+    'FM02': 100.00,
+    'FM03': 200.00,
 }
-
-# ==========================================
-# ENGELLİLİK İNDİRİMİ (Aylık TL)
-# ==========================================
 ENGELLILIK_INDIRIMI = {
-    '1': 12000.00,  # 1. Derece (%80 ve üzeri)
-    '2': 7000.00,  # 2. Derece (%60-79)
-    '3': 3000.00,  # 3. Derece (%40-59)
+    '1': 12000.00,
+    '2': 7000.00,
+    '3': 3000.00,
 }
-
-# ==========================================
-# AYLAR (Türkçe)
-# ==========================================
 AYLAR = {
     1: 'Ocak',
     2: 'Şubat',
@@ -103,17 +56,6 @@ AYLAR = {
     11: 'Kasım',
     12: 'Aralık',
 }
-
-# ==========================================
-# SGK TİPLERİ VE ORANLARI (2026)
-# ==========================================
-# Her tip için oranlar (%)
-# kvsk: Kısa Vadeli Sigorta Kolları (İşveren) - ✓ ise 2.25, ✗ ise 0
-# sgk_isci: SGK İşçi Payı
-# sgk_isveren: SGK İşveren Payı
-# issizlik_isci: İşsizlik Sigortası İşçi Payı
-# issizlik_isveren: İşsizlik Sigortası İşveren Payı
-# hazine_yardimi: Hazine Yardımı Oranı
 
 SGK_TIPLERI = {
     '1': {
@@ -396,22 +338,7 @@ SGK_TIPLERI = {
         'hazine_yardimi': 0.00,
     },
 }
-
-# Varsayılan SGK Tipi
 VARSAYILAN_SGK_TIPI = '1'
-
-# ==========================================
-# SGK TEŞVİK KANUNLARI (2026)
-# ==========================================
-# Her kanun için:
-# - ad: Kanun adı
-# - aciklama: Hesaplama açıklaması
-# - matrah_tipi: 'pek' (Prime Esas Kazanç), 'pek_alt_sinir' (Asgari Ücret), 'gun_hesabi' (Gün başına)
-# - kapsam: Hangi primler kapsamda ['sgk_isveren', 'kvsk', 'sgk_isci', 'issizlik_isveren', 'issizlik_isci']
-# - indirim_orani: İndirim oranı (100 = tamamı, 50 = yarısı, vb.)
-# - gunluk_tutar: Gün hesabı için günlük TL tutarı (sadece gun_hesabi tipi için)
-# - belgeler: İlgili SGK belge kodları
-
 SGK_KANUNLARI = {
     '00687': {
         'ad': 'İşveren Desteği (4447 nolu kanunun geçici 17. maddesi)',
@@ -614,20 +541,9 @@ SGK_KANUNLARI = {
     },
 }
 
-# Varsayılan Kanun (teşvik yok)
 VARSAYILAN_KANUN = None
 
-
 def get_sgk_oranlari(sgk_tipi='1'):
-    """
-    Belirtilen SGK tipine göre oranları döndürür.
-
-    Parametreler:
-        sgk_tipi: SGK belge tipi kodu (string)
-
-    Döndürür:
-        dict: İlgili SGK tipinin oranları
-    """
     if sgk_tipi not in SGK_TIPLERI:
         sgk_tipi = VARSAYILAN_SGK_TIPI
 
@@ -635,17 +551,8 @@ def get_sgk_oranlari(sgk_tipi='1'):
 
 
 def get_kanun_bilgisi(kanun_kodu):
-    """
-    Belirtilen kanun koduna göre teşvik bilgilerini döndürür.
-
-    Parametreler:
-        kanun_kodu: SGK teşvik kanun kodu (string)
-
-    Döndürür:
-        dict: İlgili kanunun bilgileri veya None
-    """
     if kanun_kodu is None:
         return None
 
-    kanun_kodu = str(kanun_kodu).zfill(5)  # 5 karaktere tamamla (00687, 05746, vb.)
+    kanun_kodu = str(kanun_kodu).zfill(5)
     return SGK_KANUNLARI.get(kanun_kodu)
