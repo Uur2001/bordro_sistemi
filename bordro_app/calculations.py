@@ -157,24 +157,27 @@ def hesapla_tesvikli_sgk(
         detay['hesaplama'] = f"Matrah × %{indirim_orani} = {tesvik_tutari}"
     else:
         if 'sgk_isveren' in kapsam:
+            # Kanunda özel işveren oranı tanımlıysa onu kullan
+            isveren_orani = kanun.get('isveren_orani', oranlar['sgk_isveren'])
             sgk_isveren_indirimi = yuvarla(
-                tesvik_matrahi * (oranlar['sgk_isveren'] / 100) * (indirim_orani / 100)
+                tesvik_matrahi * (isveren_orani / 100) * (indirim_orani / 100)
             )
             tesvik_tutari += sgk_isveren_indirimi
             detay['sgk_isveren_indirimi'] = sgk_isveren_indirimi
 
-            kvsk_indirimi = yuvarla(
-                tesvik_matrahi * (oranlar['kvsk'] / 100) * (indirim_orani / 100)
-            )
-            tesvik_tutari += kvsk_indirimi
-            detay['kvsk_indirimi'] = kvsk_indirimi
-
-            if kanun['matrah_tipi'] == 'pek_alt_sinir':
-                hazine_dusulecek = yuvarla(
-                    tesvik_matrahi * (oranlar['hazine_yardimi'] / 100) * (indirim_orani / 100)
+            if 'kvsk_kismi' not in kapsam:
+                kvsk_indirimi = yuvarla(
+                    tesvik_matrahi * (oranlar['kvsk'] / 100) * (indirim_orani / 100)
                 )
-                tesvik_tutari -= hazine_dusulecek
-                detay['hazine_yardimi_duslen'] = hazine_dusulecek
+                tesvik_tutari += kvsk_indirimi
+                detay['kvsk_indirimi'] = kvsk_indirimi
+
+                if indirim_orani == 100 or kanun_kodu in ['24447', '44447', '64447', '84447', '54857']:
+                    hazine_dusulecek = yuvarla(
+                        tesvik_matrahi * (oranlar['hazine_yardimi'] / 100) * (indirim_orani / 100)
+                    )
+                    tesvik_tutari -= hazine_dusulecek
+                    detay['hazine_yardimi_duslen'] = hazine_dusulecek
 
         if 'sgk_isci' in kapsam:
             sgk_isci_indirimi = yuvarla(
@@ -446,8 +449,11 @@ def hesapla_bordro(
 ):
 
     # ADIM 1: TEMEL ÜCRET HESABI
-    gunluk_ucret = aylik_brut_ucret / ay_gun_sayisi
-    calisilan_ucret = gunluk_ucret * calisan_gun
+    if calisan_gun >= 30:
+        calisilan_ucret = aylik_brut_ucret
+    else:
+        gunluk_ucret = aylik_brut_ucret / 30  # Her zaman 30 güne böl
+        calisilan_ucret = gunluk_ucret * calisan_gun
     aylik_saat_dinamik = ay_gun_sayisi * 7.5
     saatlik_ucret_eksik = aylik_brut_ucret / aylik_saat_dinamik
     eksik_saat_ucreti = saatlik_ucret_eksik * eksik_saat

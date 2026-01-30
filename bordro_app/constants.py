@@ -7,13 +7,13 @@ AYLIK_SAAT = 225
 HAFTALIK_SAAT = 45
 
 SGK_ISCI_ORANI = 14.00
-SGK_ISVEREN_ORANI = 19.50
+SGK_ISVEREN_ORANI = 21.75
 SGK_ISVEREN_TEHLIKELI = 20.50
 SGK_KVSK_ORANI = 2.25
 ISSIZLIK_ISCI_ORANI = 1.00
 ISSIZLIK_ISVEREN_ORANI = 2.00
 BES_ORANI = 3.00
-HAZINE_YARDIMI_ORANI = 2.00
+HAZINE_YARDIMI_ORANI = 5.00
 
 SGK_TABAN = ASGARI_UCRET_BRUT
 SGK_TAVAN_KATSAYI = 9
@@ -340,15 +340,6 @@ SGK_TIPLERI = {
 }
 VARSAYILAN_SGK_TIPI = '1'
 SGK_KANUNLARI = {
-    '00687': {
-        'ad': 'İşveren Desteği (4447 nolu kanunun geçici 17. maddesi)',
-        'aciklama': 'Çalışma gün sayısı × 22,22 TL',
-        'matrah_tipi': 'gun_hesabi',
-        'kapsam': [],
-        'indirim_orani': 0,
-        'gunluk_tutar': 22.22,
-        'belgeler': ['2017-010'],
-    },
     '05746': {
         'ad': 'Araştırma Geliştirme Faaliyetlerinin Desteklenmesi Hakkındaki Kanun',
         'aciklama': 'PEK üzerinden SGK işveren hissesinin yarısı',
@@ -417,6 +408,7 @@ SGK_KANUNLARI = {
         'aciklama': 'PEK alt sınırı üzerinden KVSK\'nin %1\'i ile SGK işçi ve işveren hissesinin tamamı',
         'matrah_tipi': 'pek_alt_sinir',
         'kapsam': ['sgk_isveren', 'sgk_isci', 'kvsk_kismi'],
+        'isveren_orani': 18.5,
         'indirim_orani': 100,
         'kvsk_orani': 1,
         'gunluk_tutar': 0,
@@ -479,7 +471,7 @@ SGK_KANUNLARI = {
     '46486': {
         'ad': 'Sosyal Sigortalar ve Genel Sağlık Sigortası Kanunu (I.Bölge) (5510 nolu kanunun 81 maddesinin 2. fıkrası)',
         'aciklama': 'PEK alt sınırı üzerinden %6',
-        'matrah_tipi': 'pek_alt_sinir',
+        'matrah_tipi': 'pek',
         'kapsam': ['ozel_oran'],
         'indirim_orani': 6,
         'gunluk_tutar': 0,
@@ -506,7 +498,7 @@ SGK_KANUNLARI = {
     '56486': {
         'ad': 'Sosyal Sigortalar ve Genel Sağlık Sigortası Kanunu (II.Bölge) (5510 nolu kanunun 81 maddesinin 2. fıkrası)',
         'aciklama': 'PEK alt sınırı üzerinden %6',
-        'matrah_tipi': 'pek_alt_sinir',
+        'matrah_tipi': 'pek',
         'kapsam': ['ozel_oran'],
         'indirim_orani': 6,
         'gunluk_tutar': 0,
@@ -524,7 +516,7 @@ SGK_KANUNLARI = {
     '66486': {
         'ad': 'Sosyal Sigortalar ve Genel Sağlık Sigortası Kanunu (III.Bölge) (5510 nolu kanunun 81 maddesinin 2. fıkrası)',
         'aciklama': 'PEK alt sınırı üzerinden %6',
-        'matrah_tipi': 'pek_alt_sinir',
+        'matrah_tipi': 'pek',
         'kapsam': ['ozel_oran'],
         'indirim_orani': 6,
         'gunluk_tutar': 0,
