@@ -157,7 +157,6 @@ def hesapla_tesvikli_sgk(
         detay['hesaplama'] = f"Matrah × %{indirim_orani} = {tesvik_tutari}"
     else:
         if 'sgk_isveren' in kapsam:
-            # Kanunda özel işveren oranı tanımlıysa onu kullan
             isveren_orani = kanun.get('isveren_orani', oranlar['sgk_isveren'])
             sgk_isveren_indirimi = yuvarla(
                 tesvik_matrahi * (isveren_orani / 100) * (indirim_orani / 100)
@@ -187,7 +186,7 @@ def hesapla_tesvikli_sgk(
             detay['sgk_isci_indirimi'] = sgk_isci_indirimi
 
         if 'kvsk_kismi' in kapsam:
-            kvsk_ozel_oran = kanun.get('kvsk_orani', 1)  # Varsayılan %1
+            kvsk_ozel_oran = kanun.get('kvsk_orani', 1)
             kvsk_kismi_indirimi = yuvarla(tesvik_matrahi * (kvsk_ozel_oran / 100))
             tesvik_tutari += kvsk_kismi_indirimi
             detay['kvsk_kismi_indirimi'] = kvsk_kismi_indirimi
@@ -357,11 +356,11 @@ def hesapla_saatlik_ucret(aylik_brut_ucret):
 
 def hesapla_fazla_mesai(aylik_brut_ucret, fm01_saat=0, fm02_saat=0, fm03_saat=0):
     saatlik_ucret = hesapla_saatlik_ucret(aylik_brut_ucret)
-    fm01_oran = 1 + (c.FAZLA_MESAI_ORANLARI['FM01'] / 100)  # 1.5
+    fm01_oran = 1 + (c.FAZLA_MESAI_ORANLARI['FM01'] / 100)
     fm01_ucret = saatlik_ucret * fm01_oran * fm01_saat
-    fm02_oran = 1 + (c.FAZLA_MESAI_ORANLARI['FM02'] / 100)  # 2.0
+    fm02_oran = 1 + (c.FAZLA_MESAI_ORANLARI['FM02'] / 100)
     fm02_ucret = saatlik_ucret * fm02_oran * fm02_saat
-    fm03_oran = 1 + (c.FAZLA_MESAI_ORANLARI['FM03'] / 100)  # 3.0
+    fm03_oran = 1 + (c.FAZLA_MESAI_ORANLARI['FM03'] / 100)
     fm03_ucret = saatlik_ucret * fm03_oran * fm03_saat
     toplam_saat = fm01_saat + fm02_saat + fm03_saat
     toplam_ucret = fm01_ucret + fm02_ucret + fm03_ucret
@@ -415,6 +414,34 @@ def hesapla_isveren_maliyeti(brut_kazanc, isveren_sgk, isveren_kvsk, isveren_iss
         'net_isveren_yuku': yuvarla(net_isveren_yuku),
         'toplam_maliyet': yuvarla(toplam_maliyet),
     }
+
+def hesapla_sigorta_brutu_kesintiden(kesinti, sigorta_tipi='saglik', sgk_tipi='1', kumulatif_gv_matrahi=0):
+    if kesinti is None or kesinti <= 0:
+        return 0.0
+
+    oranlar = c.get_sgk_oranlari(sgk_tipi)
+    dv_orani = c.DAMGA_VERGISI_ORANI / 100
+    if kumulatif_gv_matrahi < 190000:
+        gv_dilim_orani = 0.15
+    elif kumulatif_gv_matrahi < 400000:
+        gv_dilim_orani = 0.20
+    elif kumulatif_gv_matrahi < 1500000:
+        gv_dilim_orani = 0.27
+    elif kumulatif_gv_matrahi < 5300000:
+        gv_dilim_orani = 0.35
+    else:
+        gv_dilim_orani = 0.40
+
+    if sigorta_tipi == 'saglik':
+        brut = kesinti / (1 - dv_orani - 0.00134)
+    elif sigorta_tipi == 'hayat':
+        sgk_orani = (oranlar['sgk_isci'] + oranlar['issizlik_isci']) / 100
+        gv_etkisi = gv_dilim_orani * 0.85
+        brut = kesinti / (1 - sgk_orani - dv_orani - gv_etkisi)
+    else:
+        brut = kesinti
+
+    return yuvarla(brut)
 # 8. ANA BORDRO HESAPLAMA FONKSİYONU
 def hesapla_bordro(
 
@@ -422,7 +449,8 @@ def hesapla_bordro(
         ay=1,
         yil=2026,
         calisan_gun=30,
-        ay_gun_sayisi=30,
+        ay_gun_sayisi=None,
+        ay_gun_secimi='takvim',
         eksik_saat=0,
         kumulatif_gv_matrahi=0,
         kumulatif_asgari_gv_matrahi=0,
@@ -446,14 +474,18 @@ def hesapla_bordro(
         hazine_yardimi_aktif=True,
         engellilik_derecesi=None,
         sgk_tipi='1',
-):
+        kanun_kodu=None,
 
+):
+    if ay_gun_sayisi is None:
+        ay_gun_sayisi = c.get_ay_gun_sayisi(ay, yil, ay_gun_secimi)
     # ADIM 1: TEMEL ÜCRET HESABI
+    gunluk_ucret = aylik_brut_ucret / 30
     if calisan_gun >= 30:
         calisilan_ucret = aylik_brut_ucret
     else:
-        gunluk_ucret = aylik_brut_ucret / 30  # Her zaman 30 güne böl
-        calisilan_ucret = gunluk_ucret * calisan_gun
+        gunluk_ucret_dinamik = aylik_brut_ucret / ay_gun_sayisi
+        calisilan_ucret = gunluk_ucret_dinamik * calisan_gun
     aylik_saat_dinamik = ay_gun_sayisi * 7.5
     saatlik_ucret_eksik = aylik_brut_ucret / aylik_saat_dinamik
     eksik_saat_ucreti = saatlik_ucret_eksik * eksik_saat
@@ -467,6 +499,16 @@ def hesapla_bordro(
         fm02_saat=fm02_saat,
         fm03_saat=fm03_saat
     )
+
+    if saglik_sigorta_primi == 0 and saglik_sigorta_isveren_kesinti is not None and saglik_sigorta_isveren_kesinti > 0:
+        saglik_sigorta_primi = hesapla_sigorta_brutu_kesintiden(
+            saglik_sigorta_isveren_kesinti, 'saglik', sgk_tipi, kumulatif_gv_matrahi
+        )
+    if hayat_sigorta_primi == 0 and hayat_sigorta_isveren_kesinti is not None and hayat_sigorta_isveren_kesinti > 0:
+        hayat_sigorta_primi = hesapla_sigorta_brutu_kesintiden(
+            hayat_sigorta_isveren_kesinti, 'hayat', sgk_tipi, kumulatif_gv_matrahi
+        )
+
     # ADIM 3: TOPLAM BRÜT KAZANÇ
     toplam_brut_kazanc = bu_ayki_temel_ucret + fazla_mesai['toplam_ucret'] + ek_odemeler
     prime_tabi_brut = toplam_brut_kazanc + hayat_sigorta_primi
@@ -497,6 +539,7 @@ def hesapla_bordro(
         saglik_sigorta_isveren_kesinti=saglik_isveren,
         hayat_sigorta_isveren_kesinti=hayat_isveren
     )
+
     # ADIM 6: ENGELLİLİK İNDİRİMİ
     engellilik_indirimi = 0
     if engellilik_derecesi and engellilik_derecesi in c.ENGELLILIK_INDIRIMI:
@@ -551,8 +594,8 @@ def hesapla_bordro(
         }
         odenecek_dv = 0
     # ADIM 10: ÖZEL SİGORTA KESİNTİLERİ
-    saglik_kesinti = saglik_sigorta_kesinti if saglik_sigorta_kesinti is not None else saglik_sigorta_primi
-    hayat_kesinti = hayat_sigorta_kesinti if hayat_sigorta_kesinti is not None else hayat_sigorta_primi
+    saglik_kesinti = saglik_sigorta_isveren_kesinti if saglik_sigorta_isveren_kesinti else 0
+    hayat_kesinti = hayat_sigorta_isveren_kesinti if hayat_sigorta_isveren_kesinti else 0
     ozel_sigorta_kesintisi = saglik_kesinti + hayat_kesinti
     # ADIM 11: NET ÜCRET HESABI
     net_hesabi = hesapla_net_ucret(
@@ -565,7 +608,22 @@ def hesapla_bordro(
         ozel_sigorta_kesintisi=ozel_sigorta_kesintisi,
         ek_kesintiler=ek_kesintiler
     )
-    # ADIM 12: İŞVEREN MALİYETİ
+    # ADIM 12: TEŞVİK HESABI
+    tesvik_sonuc = None
+    tesvik_tutari = 0
+    if kanun_kodu:
+        tesvik_sonuc = hesapla_tesvikli_sgk(
+            sgk_matrahi=sgk_matrahi,
+            calisan_gun=calisan_gun,
+            kanun_kodu=kanun_kodu,
+            sgk_tipi=sgk_tipi,
+            bes_aktif=bes_aktif,
+            hazine_yardimi_aktif=hazine_yardimi_aktif
+        )
+        tesvik_tutari = tesvik_sonuc['tesvik']['tesvik_tutari']
+        if calisan_gun < 30 and tesvik_sonuc['tesvik'].get('matrah_tipi') == 'pek_alt_sinir':
+            tesvik_tutari = yuvarla(tesvik_tutari * (calisan_gun / 30))
+    # ADIM 13: İŞVEREN MALİYETİ
     maliyet = hesapla_isveren_maliyeti(
         brut_kazanc=brut_kazanclar_toplami,
         isveren_sgk=sgk_primleri['isveren_sgk'],
@@ -573,6 +631,8 @@ def hesapla_bordro(
         isveren_issizlik=sgk_primleri['isveren_issizlik'],
         hazine_yardimi=sgk_primleri['hazine_yardimi']
     )
+    maliyet['tesvik_tutari'] = tesvik_tutari
+    maliyet['toplam_maliyet'] = yuvarla(maliyet['toplam_maliyet'] - tesvik_tutari)
     # SONUÇ
     return {
         'donem': {
@@ -634,4 +694,5 @@ def hesapla_bordro(
         },
         'net_ucret': net_hesabi['net_ucret'],
         'isveren_maliyeti': maliyet,
+        'tesvik': tesvik_sonuc,
     }

@@ -43,19 +43,47 @@ ENGELLILIK_INDIRIMI = {
     '3': 3000.00,
 }
 AYLAR = {
-    1: 'Ocak',
-    2: 'Şubat',
-    3: 'Mart',
-    4: 'Nisan',
-    5: 'Mayıs',
-    6: 'Haziran',
-    7: 'Temmuz',
-    8: 'Ağustos',
-    9: 'Eylül',
-    10: 'Ekim',
-    11: 'Kasım',
-    12: 'Aralık',
+    1: {'ad': 'Ocak', 'gun': 31},
+    2: {'ad': 'Şubat', 'gun': 28},
+    3: {'ad': 'Mart', 'gun': 31},
+    4: {'ad': 'Nisan', 'gun': 30},
+    5: {'ad': 'Mayıs', 'gun': 31},
+    6: {'ad': 'Haziran', 'gun': 30},
+    7: {'ad': 'Temmuz', 'gun': 31},
+    8: {'ad': 'Ağustos', 'gun': 31},
+    9: {'ad': 'Eylül', 'gun': 30},
+    10: {'ad': 'Ekim', 'gun': 31},
+    11: {'ad': 'Kasım', 'gun': 30},
+    12: {'ad': 'Aralık', 'gun': 31},
 }
+
+AY_GUN_SECENEKLERI = {
+    'takvim': 'Takvim Günü',
+    '30': '30 Gün',
+}
+
+
+def artik_yil_mi(yil):
+    """Artık yıl kontrolü"""
+    return (yil % 4 == 0 and yil % 100 != 0) or (yil % 400 == 0)
+
+
+def get_ay_gun_sayisi(ay, yil=None, secim='takvim'):
+    """Ay gün sayısını döndürür"""
+    if secim == '30':
+        return 30
+
+    gun = AYLAR[ay]['gun']
+
+    if ay == 2 and yil and artik_yil_mi(yil):
+        return 29
+
+    return gun
+
+
+def get_ay_adi(ay):
+    """Ay adını döndürür"""
+    return AYLAR[ay]['ad']
 
 SGK_TIPLERI = {
     '1': {
@@ -548,3 +576,4 @@ def get_kanun_bilgisi(kanun_kodu):
 
     kanun_kodu = str(kanun_kodu).zfill(5)
     return SGK_KANUNLARI.get(kanun_kodu)
+
