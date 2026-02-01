@@ -5,7 +5,6 @@ def yuvarla(sayi, basamak=2):
 
     if sayi is None:
         return 0.0
-
     carpan = 10 ** basamak
     return round(float(sayi) * carpan) / carpan
 # 1. SGK HESAPLAMALARI
