@@ -133,9 +133,9 @@ SGK_TIPLERI = {
     },
     '7': {
         'ad': '3308 Sayılı Kanunda Belirtilen Aday Çırak, Çırak ve İşletmelerde Eğitim Gören Öğrenciler',
-        'kvsk': 0.00,
+        'kvsk': 1.00,
         'sgk_isci': 0.00,
-        'sgk_isveren': 1.00,
+        'sgk_isveren': 0.00,
         'issizlik_isci': 0.00,
         'issizlik_isveren': 0.00,
         'hazine_yardimi': 0.00,
@@ -196,9 +196,9 @@ SGK_TIPLERI = {
     },
     '22': {
         'ad': 'Meslek Liselerinde Okumakta İken veya Yüksek Öğrenimleri Sırasında Staja Tabi Tutulan Öğrenciler ile Üniversitelerde Kısmi Zamanlı Çalıştırılan Öğrenciler',
-        'kvsk': 0.00,
+        'kvsk': 1.00,
         'sgk_isci': 0.00,
-        'sgk_isveren': 1.00,
+        'sgk_isveren': 0.00,
         'issizlik_isci': 0.00,
         'issizlik_isveren': 0.00,
         'hazine_yardimi': 0.00,

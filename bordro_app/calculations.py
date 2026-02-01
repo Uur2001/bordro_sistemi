@@ -415,19 +415,22 @@ def hesapla_isveren_maliyeti(brut_kazanc, isveren_sgk, isveren_kvsk, isveren_iss
         'toplam_maliyet': yuvarla(toplam_maliyet),
     }
 
-def hesapla_sigorta_brutu_kesintiden(kesinti, sigorta_tipi='saglik', sgk_tipi='1', kumulatif_gv_matrahi=0):
+def hesapla_sigorta_brutu_kesintiden(kesinti, sigorta_tipi='saglik', sgk_tipi='1', kumulatif_gv_matrahi=0, bu_ayki_brut_tahmini=0):
     if kesinti is None or kesinti <= 0:
         return 0.0
 
     oranlar = c.get_sgk_oranlari(sgk_tipi)
     dv_orani = c.DAMGA_VERGISI_ORANI / 100
-    if kumulatif_gv_matrahi < 190000:
+    sgk_isci_toplam = (oranlar['sgk_isci'] + oranlar['issizlik_isci']) / 100
+    tahmini_bu_ayki_gv_matrahi = bu_ayki_brut_tahmini * (1 - sgk_isci_toplam)
+    toplam_gv_matrahi = kumulatif_gv_matrahi + tahmini_bu_ayki_gv_matrahi
+    if toplam_gv_matrahi < 190000:
         gv_dilim_orani = 0.15
-    elif kumulatif_gv_matrahi < 400000:
+    elif toplam_gv_matrahi < 400000:
         gv_dilim_orani = 0.20
-    elif kumulatif_gv_matrahi < 1500000:
+    elif toplam_gv_matrahi < 1500000:
         gv_dilim_orani = 0.27
-    elif kumulatif_gv_matrahi < 5300000:
+    elif toplam_gv_matrahi < 5300000:
         gv_dilim_orani = 0.35
     else:
         gv_dilim_orani = 0.40
@@ -435,9 +438,9 @@ def hesapla_sigorta_brutu_kesintiden(kesinti, sigorta_tipi='saglik', sgk_tipi='1
     if sigorta_tipi == 'saglik':
         brut = kesinti / (1 - dv_orani - 0.00134)
     elif sigorta_tipi == 'hayat':
-        sgk_orani = (oranlar['sgk_isci'] + oranlar['issizlik_isci']) / 100
-        gv_etkisi = gv_dilim_orani * 0.85
-        brut = kesinti / (1 - sgk_orani - dv_orani - gv_etkisi)
+        sgk_orani = sgk_isci_toplam
+        carpan = 1 - sgk_orani - gv_dilim_orani + (sgk_orani * gv_dilim_orani) - dv_orani
+        brut = kesinti / carpan
     else:
         brut = kesinti
 
@@ -481,7 +484,7 @@ def hesapla_bordro(
         ay_gun_sayisi = c.get_ay_gun_sayisi(ay, yil, ay_gun_secimi)
     # ADIM 1: TEMEL ÜCRET HESABI
     gunluk_ucret = aylik_brut_ucret / 30
-    if calisan_gun >= 30:
+    if calisan_gun >= ay_gun_sayisi:
         calisilan_ucret = aylik_brut_ucret
     else:
         gunluk_ucret_dinamik = aylik_brut_ucret / ay_gun_sayisi
@@ -500,13 +503,14 @@ def hesapla_bordro(
         fm03_saat=fm03_saat
     )
 
+    tahmini_bu_ayki_brut = bu_ayki_temel_ucret + fazla_mesai['toplam_ucret'] + ek_odemeler
     if saglik_sigorta_primi == 0 and saglik_sigorta_isveren_kesinti is not None and saglik_sigorta_isveren_kesinti > 0:
         saglik_sigorta_primi = hesapla_sigorta_brutu_kesintiden(
-            saglik_sigorta_isveren_kesinti, 'saglik', sgk_tipi, kumulatif_gv_matrahi
+            saglik_sigorta_isveren_kesinti, 'saglik', sgk_tipi, kumulatif_gv_matrahi, tahmini_bu_ayki_brut
         )
     if hayat_sigorta_primi == 0 and hayat_sigorta_isveren_kesinti is not None and hayat_sigorta_isveren_kesinti > 0:
         hayat_sigorta_primi = hesapla_sigorta_brutu_kesintiden(
-            hayat_sigorta_isveren_kesinti, 'hayat', sgk_tipi, kumulatif_gv_matrahi
+            hayat_sigorta_isveren_kesinti, 'hayat', sgk_tipi, kumulatif_gv_matrahi, tahmini_bu_ayki_brut
         )
 
     # ADIM 3: TOPLAM BRÜT KAZANÇ
