@@ -4,18 +4,6 @@ from django.shortcuts import render
 def home(request):
     return render(request, 'home.html', {'active_page': 'nedir'})
 
-# Özellikler Sayfası
-def ozellikler(request):
-    return render(request, 'ozellikler.html', {'active_page': 'ozellikler'})
-
-# Hakkında Sayfası
-def hakkinda(request):
-    return render(request, 'hakkinda.html', {'active_page': 'hakkinda'})
-
-# İletişim Sayfası
-def iletisim(request):
-    return render(request, 'iletisim.html', {'active_page': 'iletisim'})
-
 # Bordro Sihirbazı Ana Sayfa
 def bordro_sihirbazi(request):
     return render(request, 'bordro_sihirbazi.html', {'active_page': 'nedir'})
