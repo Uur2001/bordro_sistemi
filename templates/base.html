@@ -4,64 +4,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Bordro Yönetim Sistemi{% endblock %}</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>{% block title %}Bordro Hesaplama Sistemi{% endblock %}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
 </head>
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="{% url 'home' %}">
-                <img src="{% static 'images/logo.png' %}" alt="Logo" height="40" onerror="this.style.display='none'">
-                <span class="brand-text">Finis<br>Bordro</span>
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item">
-                        <a class="nav-link {% if active_page == 'nedir' %}active{% endif %}" href="{% url 'home' %}">
-                            <i class="fas fa-question-circle"></i> Nedir
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if active_page == 'ozellikler' %}active{% endif %}" href="{% url 'ozellikler' %}">
-                            <i class="fas fa-info-circle"></i> Özellikler
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if active_page == 'hakkinda' %}active{% endif %}" href="{% url 'hakkinda' %}">
-                            <i class="fas fa-user"></i> Hakkında
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if active_page == 'iletisim' %}active{% endif %}" href="{% url 'iletisim' %}">
-                            <i class="fas fa-envelope"></i> İletişim
-                        </a>
-                    </li>
-                </ul>
-                <div class="d-flex align-items-center">
-                    <a href="#" class="nav-icon me-3"><i class="fas fa-home"></i></a>
-                    <div class="user-avatar">
-                        <i class="fas fa-user"></i>
-                    </div>
+     <header>
+        <div class="container">
+            <div class="logo">
+                <img src="{% static 'images/logo.png' %}" alt="Finis Bordro Logo">
+            </div>
+            <div class="header-icons">
+                <a href="{% url 'home' %}" class="header-icon" title="Ana Sayfa">
+                    <i class="fas fa-home"></i>
+                </a>
+                <div class="user-icon">
+                    <i class="fas fa-user"></i>
                 </div>
             </div>
         </div>
-    </nav>
+    </header>
 
-    <!-- Orange Line -->
-    <div class="orange-line"></div>
-
-    <!-- Main Content -->
-    <main class="main-content">
+    <main>
         {% block content %}{% endblock %}
     </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{% static 'js/main.js' %}"></script>
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Bordro Hesaplama Sistemi. Tüm hakları saklıdır.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Dropdown menü işlevselliği
+        function toggleDropdown(dropdownId) {
+            const dropdown = document.getElementById(dropdownId);
+            const button = dropdown.previousElementSibling;
+
+            // Tüm açık dropdown'ları kapat
+            document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                if (menu.id !== dropdownId) {
+                    menu.classList.remove('show');
+                    menu.previousElementSibling.classList.remove('active');
+                }
+            });
+
+            // Seçilen dropdown'ı aç/kapat
+            dropdown.classList.toggle('show');
+            button.classList.toggle('active');
+        }
+
+        // Dropdown dışına tıklandığında kapat
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('.dropdown-container')) {
+                document.querySelectorAll('.dropdown-menu').forEach(menu => {
+                    menu.classList.remove('show');
+                    if (menu.previousElementSibling) {
+                        menu.previousElementSibling.classList.remove('active');
+                    }
+                });
+            }
+        });
+    </script>
 </body>
 </html>

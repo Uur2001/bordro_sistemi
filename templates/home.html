@@ -1,50 +1,57 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Bordro Yönetim Sistemi - Ana Sayfa{% endblock %}
+{% block title %}Ana Sayfa - Bordro Hesaplama Sistemi{% endblock %}
 
 {% block content %}
 <div class="container">
-    <!-- Başlık -->
-    <h1 class="page-title">Bordro Yönetim Sistemi</h1>
-    
-    <!-- Özellik Kartları -->
-    <div class="feature-cards">
-        <a href="{% url 'bordro_sihirbazi' %}" class="feature-card">
-            <i class="fas fa-magic"></i>
-            <span>Bordro Sihirbazı</span>
-        </a>
-        <a href="#" class="feature-card">
-            <i class="fas fa-file-excel"></i>
-            <span>Excel Programı</span>
-        </a>
-        <a href="{% url 'tazminat_hesapla' %}" class="feature-card">
-            <i class="fas fa-calculator"></i>
-            <span>Tazminat Hesapla</span>
-        </a>
-    </div>
-    
-    <!-- Bilgi Bölümü -->
-    <div class="info-section">
-        <h2><i class="fas fa-bookmark"></i> Bordro Yönetim Sistemi;</h2>
-        <p>
-            Personel bilgilerinizi kaydedip, bordrolarını hesaplatabileceğiniz veya
-            <a href="{% url 'bordro_sihirbazi' %}">bordro sihirbazı</a> ile hızlı bir şekilde
-            hesaplama yapabileceğiniz bir web uygulamasıdır. Uygulama güncel mevzuat ile uyumlu
-            olup tüm tarayıcılarda çalışabilmektedir. Sol üst köşede bulunan menü ile uygulama
-            içerisinde gezebilir; sayfa içeriklerini, özelliklerini ve iletişim bilgilerini
-            inceleyebilirsiniz.
-        </p>
-    </div>
+    <div class="cards-container">
+        <!-- Bordro Sihirbazı Kartı -->
+        <div class="card">
+            <div class="card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+            </div>
+            <h3>Bordro Sihirbazı</h3>
+            <p>Aylık veya yıllık bordro hesaplaması yapın</p>
+            <div class="dropdown-container">
+                <button class="btn-primary dropdown-btn" onclick="toggleDropdown('bordroDropdown')">
+                    Hesaplama Tipi Seçin
+                    <span class="arrow">▼</span>
+                </button>
+                <div id="bordroDropdown" class="dropdown-menu">
+                    <a href="{% url 'aylik_hesapla' %}" class="dropdown-item">
+                        <span class="item-icon">📅</span>
+                        <div>
+                            <strong>Aylık Hesaplama</strong>
+                            <small>Tek ay için bordro hesaplama</small>
+                        </div>
+                    </a>
+                    <a href="{% url 'yillik_hesapla' %}" class="dropdown-item">
+                        <span class="item-icon">📊</span>
+                        <div>
+                            <strong>Yıllık Hesaplama</strong>
+                            <small>Yıllık bordro hesaplama</small>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div>
 
-    <!-- Aksiyon Butonları -->
-    <div class="action-buttons">
-        <a href="#" class="btn btn-control">
-            <i class="fas fa-cog"></i> Kontrol Paneli
-        </a>
-        <a href="#" class="btn btn-control btn-exit">
-            <i class="fas fa-sign-out-alt"></i> Çıkış
-        </a>
+        <!-- Tazminat Hesapla Kartı -->
+        <div class="card">
+            <div class="card-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                    <line x1="1" y1="10" x2="23" y2="10"></line>
+                </svg>
+            </div>
+            <h3>Tazminat Hesapla</h3>
+            <p>Kıdem ve ihbar tazminatı hesaplaması yapın</p>
+            <a href="{% url 'tazminat_hesapla' %}" class="btn-secondary">Hesaplamaya Başla</a>
+        </div>
     </div>
 </div>
 {% endblock %}
