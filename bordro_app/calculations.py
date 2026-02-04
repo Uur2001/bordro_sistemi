@@ -483,6 +483,8 @@ def hesapla_bordro(
         ay_gun_sayisi = c.get_ay_gun_sayisi(ay, yil, ay_gun_secimi)
     # ADIM 1: TEMEL ÜCRET HESABI
     gunluk_ucret = aylik_brut_ucret / 30
+
+    # Site mantığı: Çalışılan gün >= ayın gün sayısı ise tam maaş
     if calisan_gun >= ay_gun_sayisi:
         calisilan_ucret = aylik_brut_ucret
     else:

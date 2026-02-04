@@ -37,9 +37,9 @@ FAZLA_MESAI_ORANLARI = {
     'FM03': 200.00,
 }
 ENGELLILIK_INDIRIMI = {
-    '1': 12000.00,
-    '2': 7000.00,
-    '3': 3000.00,
+    '1_derece': 12000,
+    '2_derece': 7000,
+    '3_derece': 3500,
 }
 AYLAR = {
     1: {'ad': 'Ocak', 'gun': 31},

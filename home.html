@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Bordro Yönetim Sistemi - Ana Sayfa{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Başlık -->
+    <h1 class="page-title">Bordro Yönetim Sistemi</h1>
+    
+    <!-- Özellik Kartları -->
+    <div class="feature-cards">
+        <a href="{% url 'bordro_sihirbazi' %}" class="feature-card">
+            <i class="fas fa-magic"></i>
+            <span>Bordro Sihirbazı</span>
+        </a>
+        <a href="#" class="feature-card">
+            <i class="fas fa-file-excel"></i>
+            <span>Excel Programı</span>
+        </a>
+        <a href="{% url 'tazminat_hesapla' %}" class="feature-card">
+            <i class="fas fa-calculator"></i>
+            <span>Tazminat Hesapla</span>
+        </a>
+    </div>
+    
+    <!-- Bilgi Bölümü -->
+    <div class="info-section">
+        <h2><i class="fas fa-bookmark"></i> Bordro Yönetim Sistemi;</h2>
+        <p>
+            Personel bilgilerinizi kaydedip, bordrolarını hesaplatabileceğiniz veya
+            <a href="{% url 'bordro_sihirbazi' %}">bordro sihirbazı</a> ile hızlı bir şekilde
+            hesaplama yapabileceğiniz bir web uygulamasıdır. Uygulama güncel mevzuat ile uyumlu
+            olup tüm tarayıcılarda çalışabilmektedir. Sol üst köşede bulunan menü ile uygulama
+            içerisinde gezebilir; sayfa içeriklerini, özelliklerini ve iletişim bilgilerini
+            inceleyebilirsiniz.
+        </p>
+    </div>
+
+    <!-- Aksiyon Butonları -->
+    <div class="action-buttons">
+        <a href="#" class="btn btn-control">
+            <i class="fas fa-cog"></i> Kontrol Paneli
+        </a>
+        <a href="#" class="btn btn-control btn-exit">
+            <i class="fas fa-sign-out-alt"></i> Çıkış
+        </a>
+    </div>
+</div>
+{% endblock %}

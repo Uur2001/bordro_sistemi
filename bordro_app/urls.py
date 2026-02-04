@@ -7,4 +7,5 @@ urlpatterns = [
     path('bordro-sihirbazi/aylik/', views.aylik_hesapla, name='aylik_hesapla'),
     path('bordro-sihirbazi/yillik/', views.yillik_hesapla, name='yillik_hesapla'),
     path('tazminat-hesapla/', views.tazminat_hesapla, name='tazminat_hesapla'),
+    path('hesapla-ajax/', views.hesapla_ajax, name='hesapla_ajax'),
 ]
