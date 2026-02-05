@@ -5,7 +5,6 @@
 
 {% block content %}
 <div class="calculation-page">
-    <!-- Üst Navbar - Adımlar -->
     <div class="steps-navbar">
         <div class="navbar-container">
             <button class="nav-step active" onclick="showStep(1)" data-step="1">Temel Ücret</button>
@@ -19,7 +18,6 @@
          data-aylar="{{ aylar_json|escapejs }}">
     </div>
 
-    <!-- SUCCESS/ERROR MESAJLARI -->
     {% if success %}
     <div style="max-width: 1200px; margin: 0 auto 1.5rem auto; padding: 0 2rem;">
         <div style="background: #10b981; color: white; padding: 1rem 1.5rem; border-radius: 0.5rem;">
@@ -28,24 +26,21 @@
     </div>
     {% endif %}
 
-    <!-- HESAPLAMA SONUÇLARI -->
     {% if sonuc %}
     <div style="max-width: 1200px; margin: 0 auto 1.5rem auto; padding: 0 2rem;">
         <div class="result-display">
             <h3 style="color: #0891b2; margin-bottom: 1rem; font-size: 1.3rem;">📊 Bordro Hesaplama Sonuçları</h3>
 
-            <!-- Dönem Bilgisi -->
             <div class="result-section">
                 <h4>📅 Dönem Bilgisi</h4>
                 <div class="result-grid">
                     <div class="result-item">
                         <span class="result-label">Ay:</span>
-                        <span class="result-value">{{ sonuc.donem.ay_adi }} {{ sonuc.donem.yil }}</span>
+                        <span class="result-value">{{ sonuc.donem.ay_adi.ad }} {{ sonuc.donem.yil }}</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Brüt Kazançlar -->
             <div class="result-section">
                 <h4>💰 Brüt Kazançlar</h4>
                 <div class="result-grid">
@@ -68,7 +63,6 @@
                 </div>
             </div>
 
-            <!-- SGK Bilgileri -->
             <div class="result-section">
                 <h4>🏥 SGK Bilgileri</h4>
                 <div class="result-grid">
@@ -103,7 +97,6 @@
                 </div>
             </div>
 
-            <!-- Vergiler -->
             <div class="result-section">
                 <h4>📋 Vergiler</h4>
                 <div class="result-grid">
@@ -126,7 +119,6 @@
                 </div>
             </div>
 
-            <!-- Net Ücret -->
             <div class="result-section" style="background: #dbeafe; border: 2px solid #3b82f6;">
                 <h4 style="color: #1e40af;">💵 Net Ücret</h4>
                 <div class="result-grid">
@@ -137,7 +129,6 @@
                 </div>
             </div>
 
-            <!-- İşveren Maliyeti -->
             <div class="result-section">
                 <h4>🏢 İşveren Maliyeti</h4>
                 <div class="result-grid">
@@ -160,7 +151,6 @@
                 </div>
             </div>
 
-            <!-- Debug - Tüm Sonuç (Geliştirme Aşaması İçin) -->
             <details style="margin-top: 1rem;">
                 <summary style="cursor: pointer; color: #64748b; font-size: 0.9rem;">🔍 Detaylı Sonuç (JSON)</summary>
                 <pre style="background: #1e293b; color: #e2e8f0; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; font-size: 0.8rem; margin-top: 0.5rem;">{{ sonuc|pprint }}</pre>
@@ -168,7 +158,7 @@
         </div>
     </div>
     {% endif %}
-    <!-- SONUÇLAR BİTİŞ -->
+
 
     {% if error %}
     <div style="max-width: 1200px; margin: 0 auto 1.5rem auto; padding: 0 2rem;">
@@ -185,14 +175,13 @@
     {% endif %}
 
     <div class="calculation-container-new">
-        <!-- Form Content -->
+
         <div class="form-content">
-            <!-- TEK FORM - TÜM ADIMLARI KAPSAR -->
+
             <form class="modern-form" method="POST" action="{% url 'aylik_hesapla' %}">
                 {% csrf_token %}
                 <input type="hidden" name="bordro_yil" value="2026">
 
-                <!-- ADIM 1: TEMEL ÜCRET -->
                 <div class="step-content active" id="step1">
                     <div class="form-header-bar">
                         <h2>Temel Ücret</h2>
@@ -210,7 +199,7 @@
                     </div>
 
                     <div class="form-section-content">
-                        <!-- Bordro Ayı -->
+
                         <div class="form-row-inline separator">
                             <div class="form-group inline">
                                 <label>Bordro Ayı</label>
@@ -231,7 +220,6 @@
                             </div>
                         </div>
 
-                        <!-- Aylık Temel Ücret ve GV Matrahı -->
                         <div class="form-row-inline separator">
                             <div class="form-group inline">
                                 <label>Aylık Temel Ücret</label>
@@ -243,7 +231,6 @@
                             </div>
                         </div>
 
-                        <!-- Ücret Tipi ve Asgari Ücret GV Matrahı -->
                         <div class="form-row-inline separator">
                             <div class="form-group inline">
                                 <label>Tipi</label>
@@ -258,7 +245,6 @@
                             </div>
                         </div>
 
-                        <!-- Vergiler ve Engellilik -->
                         <div class="form-row-inline">
                             <div class="form-group inline">
                                 <label>Gelir Vergisi</label>
@@ -290,10 +276,9 @@
                             </div>
                         </div>
 
-                        <!-- Butonlar -->
                         <div class="form-actions">
                             <button type="submit" class="btn-calculate">
-                                <i class="fas fa-calculator"></i> Bordro HesapLA
+                                <i class="fas fa-calculator"></i> Bordro Hesapla
                             </button>
                             <button type="button" class="btn-next" onclick="showStep(2)">
                                 Sonraki Adım <i class="fas fa-arrow-right"></i>
@@ -302,7 +287,6 @@
                     </div>
                 </div>
 
-                <!-- ADIM 2: ÇALIŞMA BİLGİLERİ -->
                 <div class="step-content" id="step2">
                     <div class="form-header-bar">
                         <h2>Çalışma Bilgileri</h2>
@@ -320,7 +304,7 @@
                     </div>
 
                     <div class="form-section-content">
-                        <!-- Bir Ay Gün Sayısı -->
+
                         <div class="form-row-inline separator">
                             <div class="form-group inline">
                                 <label>Bir Ay</label>
@@ -331,7 +315,6 @@
                             </div>
                         </div>
 
-                        <!-- Çalışılan Gün -->
                         <div class="form-row-inline separator">
                             <div class="form-group inline">
                                 <label>Çalışılan Gün</label>
@@ -339,7 +322,6 @@
                             </div>
                         </div>
 
-                        <!-- Eksik Saat -->
                         <div class="form-row-inline">
                             <div class="form-group inline">
                                 <label>Eksik Saat</label>
@@ -347,13 +329,12 @@
                             </div>
                         </div>
 
-                        <!-- Butonlar -->
                         <div class="form-actions">
                             <button type="button" class="btn-prev" onclick="showStep(1)">
                                 <i class="fas fa-arrow-left"></i> Önceki Adım
                             </button>
                             <button type="submit" class="btn-calculate">
-                                <i class="fas fa-calculator"></i> Bordro HesapLA
+                                <i class="fas fa-calculator"></i> Bordro Hesapla
                             </button>
                             <button type="button" class="btn-next" onclick="showStep(3)">
                                 Sonraki Adım <i class="fas fa-arrow-right"></i>
@@ -362,7 +343,6 @@
                     </div>
                 </div>
 
-                <!-- ADIM 3: SOSYAL GÜVENLİK -->
                 <div class="step-content" id="step3">
                     <div class="form-header-bar">
                         <h2>Sosyal Güvenlik</h2>
@@ -380,7 +360,7 @@
                     </div>
 
                     <div class="form-section-content">
-                        <!-- Sosyal Güvenlik Tipi -->
+
                         <div class="form-row-inline separator">
                             <div class="form-group inline">
                                 <label>Sosyal Güvenlik Tipi</label>
@@ -393,7 +373,6 @@
                             </div>
                         </div>
 
-                        <!-- Kanun No -->
                         <div class="form-row-inline separator">
                             <div class="form-group inline">
                                 <label>Kanun No</label>
@@ -406,7 +385,6 @@
                             </div>
                         </div>
 
-                        <!-- Hazine Yardımı -->
                         <div class="form-row-inline separator">
                             <div class="form-group inline">
                                 <label>Hazine Yardımı</label>
@@ -418,7 +396,6 @@
                             </div>
                         </div>
 
-                        <!-- B.E.S. -->
                         <div class="form-row-inline separator">
                             <div class="form-group inline">
                                 <label>B.E.S.</label>
@@ -430,7 +407,6 @@
                             </div>
                         </div>
 
-                        <!-- Devir Matrahlar -->
                         <div class="form-row-inline separator">
                             <div class="form-group inline">
                                 <label>Devir Matrah (2 önceki ay)</label>
@@ -445,13 +421,12 @@
                             </div>
                         </div>
 
-                        <!-- Butonlar -->
                         <div class="form-actions">
                             <button type="button" class="btn-prev" onclick="showStep(2)">
                                 <i class="fas fa-arrow-left"></i> Önceki Adım
                             </button>
                             <button type="submit" class="btn-calculate">
-                                <i class="fas fa-calculator"></i> Bordro HesapLA
+                                <i class="fas fa-calculator"></i> Bordro Hesapla
                             </button>
                             <button type="button" class="btn-next" onclick="showStep(4)">
                                 Sonraki Adım <i class="fas fa-arrow-right"></i>
@@ -459,8 +434,6 @@
                         </div>
                     </div>
                 </div>
-
-                <!-- ADIM 4: ÖZEL SİGORTALAR -->
                 <div class="step-content" id="step4">
                     <div class="form-header-bar">
                         <h2>Özel Sigortalar</h2>
@@ -478,7 +451,6 @@
                     </div>
 
                     <div class="form-section-content">
-                        <!-- Sağlık Sigortası İşçi -->
                         <div class="form-row-inline separator">
                             <div class="form-group inline">
                                 <label>Sağlık Sigortası İşçi</label>
@@ -486,7 +458,6 @@
                             </div>
                         </div>
 
-                        <!-- Sağlık Sigortası İşveren -->
                         <div class="form-row-inline separator">
                             <div class="form-group inline">
                                 <label>Sağlık Sigortası İşveren</label>
@@ -494,7 +465,6 @@
                             </div>
                         </div>
 
-                        <!-- Hayat Sigortası İşçi -->
                         <div class="form-row-inline separator">
                             <div class="form-group inline">
                                 <label>Hayat Sigortası İşçi</label>
@@ -502,7 +472,6 @@
                             </div>
                         </div>
 
-                        <!-- Hayat Sigortası İşveren -->
                         <div class="form-row-inline">
                             <div class="form-group inline">
                                 <label>Hayat Sigortası İşveren</label>
@@ -510,13 +479,12 @@
                             </div>
                         </div>
 
-                        <!-- Butonlar -->
                         <div class="form-actions">
                             <button type="button" class="btn-prev" onclick="showStep(3)">
                                 <i class="fas fa-arrow-left"></i> Önceki Adım
                             </button>
                             <button type="submit" class="btn-calculate">
-                                <i class="fas fa-calculator"></i> Bordro HesapLA
+                                <i class="fas fa-calculator"></i> Bordro Hesapla
                             </button>
                             <button type="button" class="btn-next" onclick="showStep(5)">
                                 Sonraki Adım <i class="fas fa-arrow-right"></i>
@@ -525,7 +493,6 @@
                     </div>
                 </div>
 
-                <!-- ADIM 5: FAZLA MESAİLER -->
                 <div class="step-content" id="step5">
                     <div class="form-header-bar">
                         <h2>Fazla Mesailer</h2>
@@ -543,7 +510,7 @@
                     </div>
 
                     <div class="form-section-content">
-                        <!-- FM01 (50%) -->
+
                         <div class="form-row-inline separator">
                             <div class="form-group inline">
                                 <label>FM01 (50,00 %)</label>
@@ -551,7 +518,6 @@
                             </div>
                         </div>
 
-                        <!-- FM02 (100%) -->
                         <div class="form-row-inline separator">
                             <div class="form-group inline">
                                 <label>FM02 (100,00 %)</label>
@@ -559,7 +525,6 @@
                             </div>
                         </div>
 
-                        <!-- FM03 (200%) -->
                         <div class="form-row-inline">
                             <div class="form-group inline">
                                 <label>FM03 (200,00 %)</label>
@@ -567,20 +532,19 @@
                             </div>
                         </div>
 
-                        <!-- Butonlar -->
                         <div class="form-actions">
                             <button type="button" class="btn-prev" onclick="showStep(4)">
                                 <i class="fas fa-arrow-left"></i> Önceki Adım
                             </button>
                             <button type="submit" class="btn-calculate">
-                                <i class="fas fa-calculator"></i> Bordro HesapLA
+                                <i class="fas fa-calculator"></i> Bordro Hesapla
                             </button>
                         </div>
                     </div>
                 </div>
 
             </form>
-            <!-- TEK FORM SONU -->
+
 
         </div>
     </div>
@@ -603,16 +567,12 @@ function showStep(stepNumber) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// DİNAMİK ÇALIŞILAN GÜN HESAPLAMA - Backend'den Veri Okuma
 document.addEventListener('DOMContentLoaded', function() {
-    // Backend'den AYLAR verisini oku
     const backendData = document.getElementById('backend-data');
     let ayGunleri = {};
 
     try {
         const aylarData = JSON.parse(backendData.dataset.aylar);
-
-        // Ay numarası -> Gün sayısı mapping'i oluştur
         for (const [ayNo, ayData] of Object.entries(aylarData)) {
             ayGunleri[parseInt(ayNo)] = parseInt(ayData.gun);
         }
@@ -627,13 +587,11 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
 
-    // Ay select'i bul (artık tek form olduğu için tek select var)
     const aySelect = document.querySelector('select[name="bordro_ay"]');
     const calisanGunInput = document.querySelector('input[name="calisilan_gun"]');
     const gunSayisiTipiSelect = document.querySelector('select[name="gun_sayisi_tipi"]');
 
     if (aySelect) {
-        // Ay değiştiğinde güncelle
         aySelect.addEventListener('change', function() {
             updateCalisanGun();
         });
@@ -652,10 +610,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const gunTipi = gunSayisiTipiSelect.value;
 
         if (gunTipi === 'takvim') {
-            // Takvim günü - ayın gerçek gün sayısı
             calisanGunInput.value = ayGunleri[secilenAy] || 30;
         } else if (gunTipi === '30') {
-            // 30 gün sabit
             calisanGunInput.value = 30;
         }
     }

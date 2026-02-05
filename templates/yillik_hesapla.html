@@ -5,7 +5,6 @@
 
 {% block content %}
 <div class="calculation-page">
-    <!-- Üst Navbar - Adımlar -->
     <div class="steps-navbar">
         <div class="navbar-container">
             <button class="nav-step active" onclick="showStep(1)" data-step="1">Temel Ücret</button>
@@ -17,7 +16,6 @@
     </div>
 
     <div class="calculation-container-new">
-        <!-- Form Content -->
         <div class="form-content">
             <!-- ADIM 1: TEMEL ÜCRET -->
             <div class="step-content active" id="step1">
@@ -38,7 +36,6 @@
 
                 <form class="modern-form">
                     <div class="form-section-content">
-                        <!-- Yıl Seçimi ve Matrahlar -->
                         <div class="yearly-info-row">
                             <div class="yearly-info-item">
                                 <label>Bordro Yılı</label>
@@ -593,222 +590,270 @@
                 </div>
 
                 <form class="modern-form">
-                    <div class="form-section-content">
-                        <div class="yearly-table">
-                            <div class="yearly-header yearly-header-sgk">
-                                <div class="col-month">Ay</div>
-                                <div class="col-sgk-tipi">Sosyal Güvenlik Tipi</div>
-                                <div class="col-kanun">Kanun No</div>
-                                <div class="col-hy">HY</div>
-                                <div class="col-bes">BES</div>
-                            </div>
+    <div class="form-section-content">
+        <div class="yearly-table">
+            <div class="yearly-header yearly-header-sgk">
+                <div class="col-month">Ay</div>
+                <div class="col-sgk-tipi">Sosyal Güvenlik Tipi</div>
+                <div class="col-kanun">Kanun No</div>
+                <div class="col-hy">HY</div>
+                <div class="col-bes">BES</div>
+            </div>
 
-                            <div class="yearly-row yearly-row-sgk">
-                                <div class="col-month"><strong>1. Ocak</strong></div>
-                                <div class="col-sgk-tipi">
-                                    <select class="form-control">
-                                        <option selected>01-Hizmet Akdi ile Tüm Sigorta Kollarına Tabi Çalışanlar</option>
-                                    </select>
-                                </div>
-                                <div class="col-kanun">
-                                    <select class="form-control">
-                                        <option selected>00000</option>
-                                    </select>
-                                </div>
-                                <div class="col-hy"><input type="checkbox" checked></div>
-                                <div class="col-bes"><input type="checkbox"></div>
-                            </div>
+            <div class="yearly-row yearly-row-sgk">
+                <div class="col-month"><strong>1. Ocak</strong></div>
+                <div class="col-sgk-tipi">
+                    <select class="form-control">
+                        {% for kod, tip in sgk_tipleri.items %}
+                        <option value="{{ kod }}-{{ tip.Ad }}" {% if kod == '01' %}selected{% endif %}>{{ kod }}-{{ tip.Ad }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-kanun">
+                    <select class="form-control">
+                        {% for kod, kanun in kanun_kodlari.items %}
+                        <option value="{{ kod }}" {% if kod == '00000' %}selected{% endif %}>{{ kod }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-hy"><input type="checkbox" checked></div>
+                <div class="col-bes"><input type="checkbox"></div>
+            </div>
 
-                            <div class="yearly-row yearly-row-sgk">
-                                <div class="col-month"><strong>2. Şubat</strong></div>
-                                <div class="col-sgk-tipi">
-                                    <select class="form-control">
-                                        <option selected>01-Hizmet Akdi ile Tüm Sigorta Kollarına Tabi Çalışanlar</option>
-                                    </select>
-                                </div>
-                                <div class="col-kanun">
-                                    <select class="form-control">
-                                        <option selected>00000</option>
-                                    </select>
-                                </div>
-                                <div class="col-hy"><input type="checkbox" checked></div>
-                                <div class="col-bes"><input type="checkbox"></div>
-                            </div>
+            <div class="yearly-row yearly-row-sgk">
+                <div class="col-month"><strong>2. Şubat</strong></div>
+                <div class="col-sgk-tipi">
+                    <select class="form-control">
+                        {% for kod, tip in sgk_tipleri.items %}
+                        <option value="{{ kod }}-{{ tip.Ad }}" {% if kod == '01' %}selected{% endif %}>{{ kod }}-{{ tip.Ad }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-kanun">
+                    <select class="form-control">
+                        {% for kod, kanun in kanun_kodlari.items %}
+                        <option value="{{ kod }}" {% if kod == '00000' %}selected{% endif %}>{{ kod }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-hy"><input type="checkbox" checked></div>
+                <div class="col-bes"><input type="checkbox"></div>
+            </div>
 
-                            <div class="yearly-row yearly-row-sgk">
-                                <div class="col-month"><strong>3. Mart</strong></div>
-                                <div class="col-sgk-tipi">
-                                    <select class="form-control">
-                                        <option selected>01-Hizmet Akdi ile Tüm Sigorta Kollarına Tabi Çalışanlar</option>
-                                    </select>
-                                </div>
-                                <div class="col-kanun">
-                                    <select class="form-control">
-                                        <option selected>00000</option>
-                                    </select>
-                                </div>
-                                <div class="col-hy"><input type="checkbox" checked></div>
-                                <div class="col-bes"><input type="checkbox"></div>
-                            </div>
+            <div class="yearly-row yearly-row-sgk">
+                <div class="col-month"><strong>3. Mart</strong></div>
+                <div class="col-sgk-tipi">
+                    <select class="form-control">
+                        {% for kod, tip in sgk_tipleri.items %}
+                        <option value="{{ kod }}-{{ tip.Ad }}" {% if kod == '01' %}selected{% endif %}>{{ kod }}-{{ tip.Ad }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-kanun">
+                    <select class="form-control">
+                        {% for kod, kanun in kanun_kodlari.items %}
+                        <option value="{{ kod }}" {% if kod == '00000' %}selected{% endif %}>{{ kod }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-hy"><input type="checkbox" checked></div>
+                <div class="col-bes"><input type="checkbox"></div>
+            </div>
 
-                            <div class="yearly-row yearly-row-sgk">
-                                <div class="col-month"><strong>4. Nisan</strong></div>
-                                <div class="col-sgk-tipi">
-                                    <select class="form-control">
-                                        <option selected>01-Hizmet Akdi ile Tüm Sigorta Kollarına Tabi Çalışanlar</option>
-                                    </select>
-                                </div>
-                                <div class="col-kanun">
-                                    <select class="form-control">
-                                        <option selected>00000</option>
-                                    </select>
-                                </div>
-                                <div class="col-hy"><input type="checkbox" checked></div>
-                                <div class="col-bes"><input type="checkbox"></div>
-                            </div>
+            <div class="yearly-row yearly-row-sgk">
+                <div class="col-month"><strong>4. Nisan</strong></div>
+                <div class="col-sgk-tipi">
+                    <select class="form-control">
+                        {% for kod, tip in sgk_tipleri.items %}
+                        <option value="{{ kod }}-{{ tip.Ad }}" {% if kod == '01' %}selected{% endif %}>{{ kod }}-{{ tip.Ad }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-kanun">
+                    <select class="form-control">
+                        {% for kod, kanun in kanun_kodlari.items %}
+                        <option value="{{ kod }}" {% if kod == '00000' %}selected{% endif %}>{{ kod }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-hy"><input type="checkbox" checked></div>
+                <div class="col-bes"><input type="checkbox"></div>
+            </div>
 
-                            <div class="yearly-row yearly-row-sgk">
-                                <div class="col-month"><strong>5. Mayıs</strong></div>
-                                <div class="col-sgk-tipi">
-                                    <select class="form-control">
-                                        <option selected>01-Hizmet Akdi ile Tüm Sigorta Kollarına Tabi Çalışanlar</option>
-                                    </select>
-                                </div>
-                                <div class="col-kanun">
-                                    <select class="form-control">
-                                        <option selected>00000</option>
-                                    </select>
-                                </div>
-                                <div class="col-hy"><input type="checkbox" checked></div>
-                                <div class="col-bes"><input type="checkbox"></div>
-                            </div>
+            <div class="yearly-row yearly-row-sgk">
+                <div class="col-month"><strong>5. Mayıs</strong></div>
+                <div class="col-sgk-tipi">
+                    <select class="form-control">
+                        {% for kod, tip in sgk_tipleri.items %}
+                        <option value="{{ kod }}-{{ tip.Ad }}" {% if kod == '01' %}selected{% endif %}>{{ kod }}-{{ tip.Ad }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-kanun">
+                    <select class="form-control">
+                        {% for kod, kanun in kanun_kodlari.items %}
+                        <option value="{{ kod }}" {% if kod == '00000' %}selected{% endif %}>{{ kod }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-hy"><input type="checkbox" checked></div>
+                <div class="col-bes"><input type="checkbox"></div>
+            </div>
 
-                            <div class="yearly-row yearly-row-sgk">
-                                <div class="col-month"><strong>6. Haziran</strong></div>
-                                <div class="col-sgk-tipi">
-                                    <select class="form-control">
-                                        <option selected>01-Hizmet Akdi ile Tüm Sigorta Kollarına Tabi Çalışanlar</option>
-                                    </select>
-                                </div>
-                                <div class="col-kanun">
-                                    <select class="form-control">
-                                        <option selected>00000</option>
-                                    </select>
-                                </div>
-                                <div class="col-hy"><input type="checkbox" checked></div>
-                                <div class="col-bes"><input type="checkbox"></div>
-                            </div>
+            <div class="yearly-row yearly-row-sgk">
+                <div class="col-month"><strong>6. Haziran</strong></div>
+                <div class="col-sgk-tipi">
+                    <select class="form-control">
+                        {% for kod, tip in sgk_tipleri.items %}
+                        <option value="{{ kod }}-{{ tip.Ad }}" {% if kod == '01' %}selected{% endif %}>{{ kod }}-{{ tip.Ad }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-kanun">
+                    <select class="form-control">
+                        {% for kod, kanun in kanun_kodlari.items %}
+                        <option value="{{ kod }}" {% if kod == '00000' %}selected{% endif %}>{{ kod }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-hy"><input type="checkbox" checked></div>
+                <div class="col-bes"><input type="checkbox"></div>
+            </div>
 
-                            <div class="yearly-row yearly-row-sgk">
-                                <div class="col-month"><strong>7. Temmuz</strong></div>
-                                <div class="col-sgk-tipi">
-                                    <select class="form-control">
-                                        <option selected>01-Hizmet Akdi ile Tüm Sigorta Kollarına Tabi Çalışanlar</option>
-                                    </select>
-                                </div>
-                                <div class="col-kanun">
-                                    <select class="form-control">
-                                        <option selected>00000</option>
-                                    </select>
-                                </div>
-                                <div class="col-hy"><input type="checkbox" checked></div>
-                                <div class="col-bes"><input type="checkbox"></div>
-                            </div>
+            <div class="yearly-row yearly-row-sgk">
+                <div class="col-month"><strong>7. Temmuz</strong></div>
+                <div class="col-sgk-tipi">
+                    <select class="form-control">
+                        {% for kod, tip in sgk_tipleri.items %}
+                        <option value="{{ kod }}-{{ tip.Ad }}" {% if kod == '01' %}selected{% endif %}>{{ kod }}-{{ tip.Ad }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-kanun">
+                    <select class="form-control">
+                        {% for kod, kanun in kanun_kodlari.items %}
+                        <option value="{{ kod }}" {% if kod == '00000' %}selected{% endif %}>{{ kod }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-hy"><input type="checkbox" checked></div>
+                <div class="col-bes"><input type="checkbox"></div>
+            </div>
 
-                            <div class="yearly-row yearly-row-sgk">
-                                <div class="col-month"><strong>8. Ağustos</strong></div>
-                                <div class="col-sgk-tipi">
-                                    <select class="form-control">
-                                        <option selected>01-Hizmet Akdi ile Tüm Sigorta Kollarına Tabi Çalışanlar</option>
-                                    </select>
-                                </div>
-                                <div class="col-kanun">
-                                    <select class="form-control">
-                                        <option selected>00000</option>
-                                    </select>
-                                </div>
-                                <div class="col-hy"><input type="checkbox" checked></div>
-                                <div class="col-bes"><input type="checkbox"></div>
-                            </div>
+            <div class="yearly-row yearly-row-sgk">
+                <div class="col-month"><strong>8. Ağustos</strong></div>
+                <div class="col-sgk-tipi">
+                    <select class="form-control">
+                        {% for kod, tip in sgk_tipleri.items %}
+                        <option value="{{ kod }}-{{ tip.Ad }}" {% if kod == '01' %}selected{% endif %}>{{ kod }}-{{ tip.Ad }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-kanun">
+                    <select class="form-control">
+                        {% for kod, kanun in kanun_kodlari.items %}
+                        <option value="{{ kod }}" {% if kod == '00000' %}selected{% endif %}>{{ kod }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-hy"><input type="checkbox" checked></div>
+                <div class="col-bes"><input type="checkbox"></div>
+            </div>
 
-                            <div class="yearly-row yearly-row-sgk">
-                                <div class="col-month"><strong>9. Eylül</strong></div>
-                                <div class="col-sgk-tipi">
-                                    <select class="form-control">
-                                        <option selected>01-Hizmet Akdi ile Tüm Sigorta Kollarına Tabi Çalışanlar</option>
-                                    </select>
-                                </div>
-                                <div class="col-kanun">
-                                    <select class="form-control">
-                                        <option selected>00000</option>
-                                    </select>
-                                </div>
-                                <div class="col-hy"><input type="checkbox" checked></div>
-                                <div class="col-bes"><input type="checkbox"></div>
-                            </div>
+            <div class="yearly-row yearly-row-sgk">
+                <div class="col-month"><strong>9. Eylül</strong></div>
+                <div class="col-sgk-tipi">
+                    <select class="form-control">
+                        {% for kod, tip in sgk_tipleri.items %}
+                        <option value="{{ kod }}-{{ tip.Ad }}" {% if kod == '01' %}selected{% endif %}>{{ kod }}-{{ tip.Ad }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-kanun">
+                    <select class="form-control">
+                        {% for kod, kanun in kanun_kodlari.items %}
+                        <option value="{{ kod }}" {% if kod == '00000' %}selected{% endif %}>{{ kod }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-hy"><input type="checkbox" checked></div>
+                <div class="col-bes"><input type="checkbox"></div>
+            </div>
 
-                            <div class="yearly-row yearly-row-sgk">
-                                <div class="col-month"><strong>10. Ekim</strong></div>
-                                <div class="col-sgk-tipi">
-                                    <select class="form-control">
-                                        <option selected>01-Hizmet Akdi ile Tüm Sigorta Kollarına Tabi Çalışanlar</option>
-                                    </select>
-                                </div>
-                                <div class="col-kanun">
-                                    <select class="form-control">
-                                        <option selected>00000</option>
-                                    </select>
-                                </div>
-                                <div class="col-hy"><input type="checkbox" checked></div>
-                                <div class="col-bes"><input type="checkbox"></div>
-                            </div>
+            <div class="yearly-row yearly-row-sgk">
+                <div class="col-month"><strong>10. Ekim</strong></div>
+                <div class="col-sgk-tipi">
+                    <select class="form-control">
+                        {% for kod, tip in sgk_tipleri.items %}
+                        <option value="{{ kod }}-{{ tip.Ad }}" {% if kod == '01' %}selected{% endif %}>{{ kod }}-{{ tip.Ad }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-kanun">
+                    <select class="form-control">
+                        {% for kod, kanun in kanun_kodlari.items %}
+                        <option value="{{ kod }}" {% if kod == '00000' %}selected{% endif %}>{{ kod }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-hy"><input type="checkbox" checked></div>
+                <div class="col-bes"><input type="checkbox"></div>
+            </div>
 
-                            <div class="yearly-row yearly-row-sgk">
-                                <div class="col-month"><strong>11. Kasım</strong></div>
-                                <div class="col-sgk-tipi">
-                                    <select class="form-control">
-                                        <option selected>01-Hizmet Akdi ile Tüm Sigorta Kollarına Tabi Çalışanlar</option>
-                                    </select>
-                                </div>
-                                <div class="col-kanun">
-                                    <select class="form-control">
-                                        <option selected>00000</option>
-                                    </select>
-                                </div>
-                                <div class="col-hy"><input type="checkbox" checked></div>
-                                <div class="col-bes"><input type="checkbox"></div>
-                            </div>
+            <div class="yearly-row yearly-row-sgk">
+                <div class="col-month"><strong>11. Kasım</strong></div>
+                <div class="col-sgk-tipi">
+                    <select class="form-control">
+                        {% for kod, tip in sgk_tipleri.items %}
+                        <option value="{{ kod }}-{{ tip.Ad }}" {% if kod == '01' %}selected{% endif %}>{{ kod }}-{{ tip.Ad }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-kanun">
+                    <select class="form-control">
+                        {% for kod, kanun in kanun_kodlari.items %}
+                        <option value="{{ kod }}" {% if kod == '00000' %}selected{% endif %}>{{ kod }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-hy"><input type="checkbox" checked></div>
+                <div class="col-bes"><input type="checkbox"></div>
+            </div>
 
-                            <div class="yearly-row yearly-row-sgk">
-                                <div class="col-month"><strong>12. Aralık</strong></div>
-                                <div class="col-sgk-tipi">
-                                    <select class="form-control">
-                                        <option selected>01-Hizmet Akdi ile Tüm Sigorta Kollarına Tabi Çalışanlar</option>
-                                    </select>
-                                </div>
-                                <div class="col-kanun">
-                                    <select class="form-control">
-                                        <option selected>00000</option>
-                                    </select>
-                                </div>
-                                <div class="col-hy"><input type="checkbox" checked></div>
-                                <div class="col-bes"><input type="checkbox"></div>
-                            </div>
-                        </div>
+            <div class="yearly-row yearly-row-sgk">
+                <div class="col-month"><strong>12. Aralık</strong></div>
+                <div class="col-sgk-tipi">
+                    <select class="form-control">
+                        {% for kod, tip in sgk_tipleri.items %}
+                        <option value="{{ kod }}-{{ tip.Ad }}" {% if kod == '01' %}selected{% endif %}>{{ kod }}-{{ tip.Ad }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-kanun">
+                    <select class="form-control">
+                        {% for kod, kanun in kanun_kodlari.items %}
+                        <option value="{{ kod }}" {% if kod == '00000' %}selected{% endif %}>{{ kod }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-hy"><input type="checkbox" checked></div>
+                <div class="col-bes"><input type="checkbox"></div>
+            </div>
+        </div>
 
-                        <div class="form-actions">
-                            <button type="button" class="btn-prev" onclick="showStep(2)">
-                                <i class="fas fa-arrow-left"></i> Önceki Adım
-                            </button>
-                            <button type="button" class="btn-calculate">
-                                <i class="fas fa-calculator"></i> Bordro Hesapla
-                            </button>
-                            <button type="button" class="btn-next" onclick="showStep(4)">
-                                Sonraki Adım <i class="fas fa-arrow-right"></i>
-                            </button>
-                        </div>
-                    </div>
-                </form>
+        <div class="form-actions">
+            <button type="button" class="btn-prev" onclick="showStep(2)">
+                <i class="fas fa-arrow-left"></i> Önceki Adım
+            </button>
+            <button type="button" class="btn-calculate">
+                <i class="fas fa-calculator"></i> Bordro Hesapla
+            </button>
+            <button type="button" class="btn-next" onclick="showStep(4)">
+                Sonraki Adım <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+    </div>
+</form>
             </div>
 
             <!-- ADIM 4: ÖZEL SİGORTALAR -->
@@ -1068,13 +1113,13 @@
                                 <i class="fas fa-arrow-left"></i> Önceki Adım
                             </button>
                             <button type="button" class="btn-calculate">
-                                <i class="fas fa-calculator"></i> Bordro HesapLA
+                                <i class="fas fa-calculator"></i> Bordro Hesapla
                             </button>
                         </div>
                     </div>
                 </form>
             </div>
-<!-- SONUÇ ALANI -->
+
             <div id="sonuc-alani" style="display:none; margin-top: 30px;">
                 <div class="form-header-bar">
                     <h2><i class="fas fa-check-circle" style="color: #28a745;"></i> Hesaplama Sonucu</h2>
@@ -1085,12 +1130,10 @@
                     <div id="yillik-ozet" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;"></div>
                 </div>
 
-                <div style="background: #f8f9fa; border-radius: 8px; padding: 20px; margin-top: 15px;">
-                    <h3 style="margin-bottom: 15px; color: #333;">
-                        <i class="fas fa-search"></i> Detaylı Sonuç (JSON)
-                    </h3>
-                    <pre id="json-sonuc" style="background: #1e1e1e; color: #d4d4d4; padding: 20px; border-radius: 8px; overflow-x: auto; font-size: 13px; max-height: 500px; overflow-y: auto;"></pre>
-                </div>
+                <details style="margin-top: 1rem;">
+                    <summary style="cursor: pointer; color: #64748b; font-size: 0.9rem;">🔍 Detaylı Sonuç (JSON)</summary>
+                    <pre id="json-sonuc" style="background: #1e293b; color: #e2e8f0; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; font-size: 0.8rem; margin-top: 0.5rem; max-height: 500px; overflow-y: auto;"></pre>
+                </details>
             </div>
         </div>
     </div>
@@ -1114,7 +1157,7 @@ function showStep(stepNumber) {
 </script>
 
 <script>
-// CSRF Token al
+
 function getCookie(name) {
     let cookieValue = null;
     if (document.cookie && document.cookie !== '') {
@@ -1130,7 +1173,6 @@ function getCookie(name) {
     return cookieValue;
 }
 
-// Türkçe sayı parse
 function parseTurkishNumber(value) {
     if (typeof value === 'number') return value;
     let s = String(value).trim();
@@ -1141,15 +1183,12 @@ function parseTurkishNumber(value) {
     return parseFloat(s) || 0;
 }
 
-// Form verilerini topla
 function collectFormData() {
     const data = { yil: 2026 };
 
     for (let ay = 1; ay <= 12; ay++) {
         const ayKey = `ay_${ay}`;
         data[ayKey] = {};
-
-        // Adım 1: Temel Ücret
         const step1Rows = document.querySelectorAll('#step1 .yearly-row');
         if (step1Rows[ay - 1]) {
             const row = step1Rows[ay - 1];
@@ -1164,7 +1203,6 @@ function collectFormData() {
             }
         }
 
-        // Adım 2: Çalışma Bilgileri
         const step2Rows = document.querySelectorAll('#step2 .yearly-row-calisma');
         if (step2Rows[ay - 1]) {
             const row = step2Rows[ay - 1];
@@ -1176,7 +1214,6 @@ function collectFormData() {
             if (gunInput) data[ayKey].gun = parseTurkishNumber(gunInput.value);
         }
 
-        // Adım 3: Sosyal Güvenlik
         const step3Rows = document.querySelectorAll('#step3 .yearly-row-sgk');
         if (step3Rows[ay - 1]) {
             const row = step3Rows[ay - 1];
@@ -1195,7 +1232,6 @@ function collectFormData() {
         }
     }
 
-    // Genel parametreler (ilk aydan al)
     const ilkAy = data['ay_1'] || {};
     data.sgk_tipi = ilkAy.sgk_tipi || '01';
     data.kanun_kodu = ilkAy.kanun_kodu || '00000';
@@ -1206,9 +1242,7 @@ function collectFormData() {
     return data;
 }
 
-// Hesapla ve sonucu göster
 async function hesaplaVeYonlendir() {
-    // Loading göster
     const overlay = document.createElement('div');
     overlay.id = 'loading-overlay';
     overlay.innerHTML = `
@@ -1236,11 +1270,9 @@ async function hesaplaVeYonlendir() {
         const result = await response.json();
         console.log('Sonuç:', result);
 
-        // Loading kaldır
         document.body.removeChild(overlay);
 
         if (result.success) {
-            // Sonucu sayfada göster
             sonucGoster(result);
         } else {
             alert('Hesaplama hatası: ' + (result.error || 'Bilinmeyen hata'));
@@ -1254,13 +1286,10 @@ async function hesaplaVeYonlendir() {
     }
 }
 
-// Sonucu sayfada göster
 function sonucGoster(result) {
     const sonucAlani = document.getElementById('sonuc-alani');
     const yillikOzet = document.getElementById('yillik-ozet');
     const jsonSonuc = document.getElementById('json-sonuc');
-
-    // Yıllık özet kartları
     const ozet = result.sonuc.yillik_ozet || {};
     yillikOzet.innerHTML = `
         <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; text-align: center;">
@@ -1289,21 +1318,16 @@ function sonucGoster(result) {
         </div>
     `;
 
-    // JSON sonuç
     jsonSonuc.textContent = JSON.stringify(result.sonuc, null, 2);
-
-    // Sonuç alanını göster ve scroll et
     sonucAlani.style.display = 'block';
     sonucAlani.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
-// Para formatla
 function formatPara(sayi) {
     if (!sayi) return '0,00';
     return new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(sayi);
 }
 
-// Adım geçişi
 function showStep(stepNumber) {
     document.querySelectorAll('.step-content').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.nav-step').forEach(b => b.classList.remove('active'));
@@ -1312,9 +1336,7 @@ function showStep(stepNumber) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// Sayfa yüklendiğinde
 document.addEventListener('DOMContentLoaded', function() {
-    // Tüm "Bordro Hesapla" butonlarına click event'i ekle
     document.querySelectorAll('.btn-calculate').forEach(btn => {
         btn.addEventListener('click', function(e) {
             e.preventDefault();

@@ -113,17 +113,15 @@
             </div>
 
             <!-- JSON Sonuç (Debug) -->
-            <div class="info-card" id="json-card" style="display:none;">
-                <h3 class="card-title"><i class="fas fa-search"></i> Detaylı Sonuç (JSON)</h3>
-                <div class="card-content">
-                    <pre id="json-sonuc" style="background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 8px; overflow-x: auto; font-size: 12px; max-height: 400px; overflow-y: auto;"></pre>
-                </div>
+            <div id="json-card" style="display:none; margin-top: 1rem;">
+                <details>
+                    <summary style="cursor: pointer; color: #64748b; font-size: 0.9rem;">🔍 Detaylı Sonuç (JSON)</summary>
+                    <pre id="json-sonuc" style="background: #1e293b; color: #e2e8f0; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; font-size: 0.8rem; margin-top: 0.5rem; max-height: 400px; overflow-y: auto;"></pre>
+                </details>
             </div>
         </div>
 
-        <!-- SAĞ TARAF - SONUÇLAR -->
         <div class="right-panel">
-            <!-- Hizmet Süresi Bilgisi -->
             <div class="result-card" id="hizmet-card">
                 <h3 class="result-title">Hizmet Süresi</h3>
                 <div class="totals-content">
@@ -133,8 +131,6 @@
                     </div>
                 </div>
             </div>
-
-            <!-- TABLO 1: Kıd. Taz. -->
             <div class="result-card">
                 <h3 class="result-title">Kıd. Taz.</h3>
                 <table class="result-table">
@@ -174,8 +170,6 @@
                     </tbody>
                 </table>
             </div>
-
-            <!-- TABLO 2: İhbar Taz. -->
             <div class="result-card">
                 <h3 class="result-title">İhbar Taz.</h3>
                 <table class="result-table">
@@ -205,8 +199,6 @@
                     </tbody>
                 </table>
             </div>
-
-            <!-- TABLO 3: Toplamlar -->
             <div class="result-card">
                 <h3 class="result-title">Toplamlar</h3>
                 <div class="totals-content">
@@ -318,8 +310,8 @@ async function hesaplaTazminat() {
 }
 
 function sonucGoster(sonuc) {
-    document.getElementById('hizmet-suresi').textContent = sonuc.hizmet_suresi.metin;
-    document.getElementById('giydirilmis_brut').value = formatPara(sonuc.ucretler.giydirilmis_brut);
+        document.getElementById('json-card').style.display = 'block';
+        document.getElementById('json-sonuc').textContent = JSON.stringify(sonuc, null, 2);
 
     const kidem = sonuc.kidem;
     if (kidem.hak_edildi) {
