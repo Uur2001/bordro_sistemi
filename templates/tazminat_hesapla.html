@@ -5,7 +5,6 @@
 
 {% block content %}
 <div class="tazminat-page">
-    <!-- Üst Buton Çubuğu -->
     <div class="action-bar">
         <select class="action-select">
             <option>-</option>
@@ -14,13 +13,11 @@
         <button class="action-btn blue"><i class="fas fa-save"></i></button>
         <button class="action-btn cyan"><i class="fas fa-edit"></i></button>
         <button class="action-btn red"><i class="fas fa-trash"></i></button>
-        <button class="action-btn-large green"><i class="fas fa-calculator"></i> Hesapla</button>
+        <button class="action-btn-large green" id="btn-hesapla"><i class="fas fa-calculator"></i> Hesapla</button>
         <button class="action-btn-large red"><i class="fas fa-file-pdf"></i> PDF Bordro</button>
     </div>
 
-    <!-- Ana İçerik - 2 Sütun -->
     <div class="tazminat-container">
-        <!-- SOL TARAF - FORM -->
         <div class="left-panel">
             <!-- 1. KART: Tazminata Esas Süre -->
             <div class="info-card">
@@ -28,15 +25,15 @@
                 <div class="card-content">
                     <div class="form-row">
                         <label>Giriş Tarihi</label>
-                        <input type="date" class="form-control" value="2026-02-04">
+                        <input type="date" class="form-control" id="giris_tarihi" value="2020-01-15">
                     </div>
                     <div class="form-row">
                         <label>Çıkış Tarihi</label>
-                        <input type="date" class="form-control" value="2026-02-04">
+                        <input type="date" class="form-control" id="cikis_tarihi" value="2026-02-04">
                     </div>
                     <div class="form-row">
                         <label>Kıdem Dışı Süre</label>
-                        <input type="text" class="form-control" value="0 gün">
+                        <input type="text" class="form-control" id="kidem_disi_gun" value="0">
                     </div>
                 </div>
             </div>
@@ -48,29 +45,29 @@
                     <div class="three-col-row">
                         <div class="col-item">
                             <label>Aylık Brüt Ücret</label>
-                            <input type="text" class="form-control" value="33.030,00 ₺">
+                            <input type="text" class="form-control" id="aylik_brut_ucret" value="33.030,00 ₺">
                         </div>
                         <div class="col-item">
                             <label>Aylık Brüt Ek Ücr.</label>
-                            <input type="text" class="form-control" value="0,00 ₺">
+                            <input type="text" class="form-control" id="aylik_brut_ek_ucret" value="0,00 ₺">
                         </div>
                         <div class="col-item">
                             <label>Yıllık Brüt İkramiye</label>
-                            <input type="text" class="form-control" value="0,00 ₺">
+                            <input type="text" class="form-control" id="yillik_brut_ikramiye" value="0,00 ₺">
                         </div>
                     </div>
                     <div class="three-col-row">
                         <div class="col-item">
                             <label>Yıllık G.V. Matrahı</label>
-                            <input type="text" class="form-control" value="0,00 ₺">
+                            <input type="text" class="form-control" id="kumulatif_gv_matrahi" value="0,00 ₺">
                         </div>
                         <div class="col-item">
                             <label>Aylık Giy. Brüt Ücr.</label>
-                            <input type="text" class="form-control" value="33.030,00 ₺">
+                            <input type="text" class="form-control" id="giydirilmis_brut" value="33.030,00 ₺" readonly style="background:#f0f0f0;">
                         </div>
                         <div class="col-item">
                             <label>Kıdem Tazm.Tavanı</label>
-                            <input type="text" class="form-control" value="64.948,77 ₺">
+                            <input type="text" class="form-control" id="kidem_tavani" value="64.948,77 ₺" readonly style="background:#f0f0f0;">
                         </div>
                     </div>
                 </div>
@@ -83,7 +80,7 @@
                     <div class="param-row">
                         <label>İhbar Tazminatı</label>
                         <label class="toggle-switch">
-                            <input type="checkbox" checked>
+                            <input type="checkbox" id="ihbar_hesaplansin" checked>
                             <span class="toggle-slider"></span>
                             <span class="toggle-text">Hesaplansın</span>
                         </label>
@@ -91,7 +88,7 @@
                     <div class="param-row">
                         <label>İhbar Tazminatı Gelir Vergisi</label>
                         <label class="toggle-switch">
-                            <input type="checkbox" checked>
+                            <input type="checkbox" id="ihbar_gv_hesaplansin" checked>
                             <span class="toggle-slider"></span>
                             <span class="toggle-text">Hesaplansın</span>
                         </label>
@@ -99,7 +96,7 @@
                     <div class="param-row">
                         <label>İhbar Tazminatı Damga Vergisi</label>
                         <label class="toggle-switch">
-                            <input type="checkbox" checked>
+                            <input type="checkbox" id="ihbar_dv_hesaplansin" checked>
                             <span class="toggle-slider"></span>
                             <span class="toggle-text">Hesaplansın</span>
                         </label>
@@ -107,57 +104,76 @@
                     <div class="param-row">
                         <label>Kıdem Tazminatı Damga Vergisi</label>
                         <label class="toggle-switch">
-                            <input type="checkbox" checked>
+                            <input type="checkbox" id="kidem_dv_hesaplansin" checked>
                             <span class="toggle-slider"></span>
                             <span class="toggle-text">Hesaplansın</span>
                         </label>
                     </div>
                 </div>
             </div>
+
+            <!-- JSON Sonuç (Debug) -->
+            <div class="info-card" id="json-card" style="display:none;">
+                <h3 class="card-title"><i class="fas fa-search"></i> Detaylı Sonuç (JSON)</h3>
+                <div class="card-content">
+                    <pre id="json-sonuc" style="background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 8px; overflow-x: auto; font-size: 12px; max-height: 400px; overflow-y: auto;"></pre>
+                </div>
+            </div>
         </div>
 
         <!-- SAĞ TARAF - SONUÇLAR -->
         <div class="right-panel">
+            <!-- Hizmet Süresi Bilgisi -->
+            <div class="result-card" id="hizmet-card">
+                <h3 class="result-title">Hizmet Süresi</h3>
+                <div class="totals-content">
+                    <div class="total-row">
+                        <span>Net Hizmet Süresi</span>
+                        <strong id="hizmet-suresi">- Yıl, - Ay, - Gün</strong>
+                    </div>
+                </div>
+            </div>
+
             <!-- TABLO 1: Kıd. Taz. -->
-<div class="result-card">
-    <h3 class="result-title">Kıd. Taz.</h3>
-    <table class="result-table">
-        <thead>
-            <tr>
-                <th>Kıd. Taz.</th>
-                <th>Adet</th>
-                <th>Bir.Tut.</th>
-                <th>Tutar</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>Yıl</td>
-                <td>6</td>
-                <td>64.948,77 ₺</td>
-                <td>389.692,62 ₺</td>
-            </tr>
-            <tr>
-                <td>Ay</td>
-                <td>8</td>
-                <td>5.412,40 ₺</td>
-                <td>43.299,18 ₺</td>
-            </tr>
-            <tr>
-                <td>Gün</td>
-                <td>25</td>
-                <td>180,41 ₺</td>
-                <td>4.510,33 ₺</td>
-            </tr>
-            <tr class="total-row-table">
-                <td><strong>Brüt Kıdem Tazminatı</strong></td>
-                <td></td>
-                <td></td>
-                <td><strong>437.502,13 ₺</strong></td>
-            </tr>
-        </tbody>
-    </table>
-</div>
+            <div class="result-card">
+                <h3 class="result-title">Kıd. Taz.</h3>
+                <table class="result-table">
+                    <thead>
+                        <tr>
+                            <th>Kıd. Taz.</th>
+                            <th>Adet</th>
+                            <th>Bir.Tut.</th>
+                            <th>Tutar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Yıl</td>
+                            <td id="kidem-yil-adet">-</td>
+                            <td id="kidem-yil-birim">-</td>
+                            <td id="kidem-yil-tutar">-</td>
+                        </tr>
+                        <tr>
+                            <td>Ay</td>
+                            <td id="kidem-ay-adet">-</td>
+                            <td id="kidem-ay-birim">-</td>
+                            <td id="kidem-ay-tutar">-</td>
+                        </tr>
+                        <tr>
+                            <td>Gün</td>
+                            <td id="kidem-gun-adet">-</td>
+                            <td id="kidem-gun-birim">-</td>
+                            <td id="kidem-gun-tutar">-</td>
+                        </tr>
+                        <tr class="total-row-table">
+                            <td><strong>Brüt Kıdem Tazminatı</strong></td>
+                            <td></td>
+                            <td></td>
+                            <td><strong id="kidem-brut-toplam">-</strong></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
             <!-- TABLO 2: İhbar Taz. -->
             <div class="result-card">
@@ -174,17 +190,17 @@
                         <tr>
                             <td>Aylık Giy. Brüt Ücr.</td>
                             <td>30</td>
-                            <td>33.030,00 ₺</td>
+                            <td id="ihbar-aylik-brut">-</td>
                         </tr>
                         <tr>
                             <td>Günlük Brüt Ücret</td>
                             <td>1</td>
-                            <td>1.101,00 ₺</td>
+                            <td id="ihbar-gunluk-brut">-</td>
                         </tr>
                         <tr>
                             <td>Brüt İhbar Tazm.</td>
-                            <td>14</td>
-                            <td>15.414,00 ₺</td>
+                            <td id="ihbar-gun-sayisi">-</td>
+                            <td id="ihbar-brut-toplam">-</td>
                         </tr>
                     </tbody>
                 </table>
@@ -196,23 +212,159 @@
                 <div class="totals-content">
                     <div class="total-row">
                         <span>Brüt Tazminat Toplamı</span>
-                        <strong>15.414,00 ₺</strong>
+                        <strong id="toplam-brut">-</strong>
                     </div>
                     <div class="total-row">
                         <span>Gelir Vergisi (-)</span>
-                        <strong>2.312,10 ₺</strong>
+                        <strong id="toplam-gv">-</strong>
                     </div>
                     <div class="total-row">
                         <span>Damga Vergisi (-)</span>
-                        <strong>116,99 ₺</strong>
+                        <strong id="toplam-dv">-</strong>
                     </div>
                     <div class="total-row final">
                         <span>Net Tazminat Toplamı</span>
-                        <strong>12.984,91 ₺</strong>
+                        <strong id="toplam-net">-</strong>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+function parseTurkishNumber(value) {
+    if (typeof value === 'number') return value;
+    let s = String(value).trim();
+    ['₺', 'TL', 'gün', 'saat', '%'].forEach(u => s = s.replace(u, ''));
+    s = s.trim();
+    if (!s) return 0;
+    s = s.replace(/\./g, '').replace(',', '.');
+    return parseFloat(s) || 0;
+}
+
+function formatPara(sayi) {
+    if (sayi === null || sayi === undefined || sayi === '-') return '-';
+    return new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(sayi) + ' ₺';
+}
+
+function collectFormData() {
+    return {
+        giris_tarihi: document.getElementById('giris_tarihi').value,
+        cikis_tarihi: document.getElementById('cikis_tarihi').value,
+        kidem_disi_gun: parseTurkishNumber(document.getElementById('kidem_disi_gun').value),
+        aylik_brut_ucret: parseTurkishNumber(document.getElementById('aylik_brut_ucret').value),
+        aylik_brut_ek_ucret: parseTurkishNumber(document.getElementById('aylik_brut_ek_ucret').value),
+        yillik_brut_ikramiye: parseTurkishNumber(document.getElementById('yillik_brut_ikramiye').value),
+        kumulatif_gv_matrahi: parseTurkishNumber(document.getElementById('kumulatif_gv_matrahi').value),
+        ihbar_hesaplansin: document.getElementById('ihbar_hesaplansin').checked,
+        ihbar_gv_hesaplansin: document.getElementById('ihbar_gv_hesaplansin').checked,
+        ihbar_dv_hesaplansin: document.getElementById('ihbar_dv_hesaplansin').checked,
+        kidem_dv_hesaplansin: document.getElementById('kidem_dv_hesaplansin').checked,
+    };
+}
+
+async function hesaplaTazminat() {
+    const btn = document.getElementById('btn-hesapla');
+    const originalText = btn.innerHTML;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Hesaplanıyor...';
+    btn.disabled = true;
+
+    try {
+        const formData = collectFormData();
+        console.log('Gönderilen veri:', formData);
+
+        const response = await fetch('{% url "tazminat_hesapla_api" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(formData)
+        });
+
+        const result = await response.json();
+        console.log('Sonuç:', result);
+
+        if (result.success) {
+            sonucGoster(result.sonuc);
+        } else {
+            alert('Hesaplama hatası: ' + (result.error || 'Bilinmeyen hata'));
+            console.error('Hata detayı:', result.traceback);
+        }
+    } catch (error) {
+        console.error('Bağlantı hatası:', error);
+        alert('Bağlantı hatası: ' + error.message);
+    } finally {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+    }
+}
+
+function sonucGoster(sonuc) {
+    document.getElementById('hizmet-suresi').textContent = sonuc.hizmet_suresi.metin;
+    document.getElementById('giydirilmis_brut').value = formatPara(sonuc.ucretler.giydirilmis_brut);
+
+    const kidem = sonuc.kidem;
+    if (kidem.hak_edildi) {
+        document.getElementById('kidem-yil-adet').textContent = kidem.yil.adet;
+        document.getElementById('kidem-yil-birim').textContent = formatPara(kidem.yil.birim_tutar);
+        document.getElementById('kidem-yil-tutar').textContent = formatPara(kidem.yil.tutar);
+        document.getElementById('kidem-ay-adet').textContent = kidem.ay.adet;
+        document.getElementById('kidem-ay-birim').textContent = formatPara(kidem.ay.birim_tutar);
+        document.getElementById('kidem-ay-tutar').textContent = formatPara(kidem.ay.tutar);
+        document.getElementById('kidem-gun-adet').textContent = kidem.gun.adet;
+        document.getElementById('kidem-gun-birim').textContent = formatPara(kidem.gun.birim_tutar);
+        document.getElementById('kidem-gun-tutar').textContent = formatPara(kidem.gun.tutar);
+        document.getElementById('kidem-brut-toplam').textContent = formatPara(kidem.brut_toplam);
+    } else {
+        document.getElementById('kidem-yil-adet').textContent = '-';
+        document.getElementById('kidem-yil-birim').textContent = '-';
+        document.getElementById('kidem-yil-tutar').textContent = '-';
+        document.getElementById('kidem-ay-adet').textContent = '-';
+        document.getElementById('kidem-ay-birim').textContent = '-';
+        document.getElementById('kidem-ay-tutar').textContent = '-';
+        document.getElementById('kidem-gun-adet').textContent = '-';
+        document.getElementById('kidem-gun-birim').textContent = '-';
+        document.getElementById('kidem-gun-tutar').textContent = '-';
+        document.getElementById('kidem-brut-toplam').textContent = 'Hak Edilmedi (< 1 Yıl)';
+    }
+
+    const ihbar = sonuc.ihbar;
+    document.getElementById('ihbar-aylik-brut').textContent = formatPara(sonuc.ucretler.giydirilmis_brut);
+    document.getElementById('ihbar-gunluk-brut').textContent = formatPara(ihbar.gunluk_brut);
+    document.getElementById('ihbar-gun-sayisi').textContent = ihbar.sure_gun;
+    document.getElementById('ihbar-brut-toplam').textContent = formatPara(ihbar.brut_toplam);
+
+    const toplam = sonuc.toplam;
+    document.getElementById('toplam-brut').textContent = formatPara(toplam.brut_tazminat);
+    document.getElementById('toplam-gv').textContent = formatPara(toplam.gelir_vergisi);
+    document.getElementById('toplam-dv').textContent = formatPara(toplam.damga_vergisi);
+    document.getElementById('toplam-net').textContent = formatPara(toplam.net_tazminat);
+
+    document.getElementById('json-card').style.display = 'block';
+    document.getElementById('json-sonuc').textContent = JSON.stringify(sonuc, null, 2);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('btn-hesapla').addEventListener('click', hesaplaTazminat);
+    console.log('Tazminat hesaplama JS yüklendi');
+});
+</script>
 {% endblock %}

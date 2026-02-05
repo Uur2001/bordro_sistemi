@@ -1074,7 +1074,24 @@
                     </div>
                 </form>
             </div>
+<!-- SONUÇ ALANI -->
+            <div id="sonuc-alani" style="display:none; margin-top: 30px;">
+                <div class="form-header-bar">
+                    <h2><i class="fas fa-check-circle" style="color: #28a745;"></i> Hesaplama Sonucu</h2>
+                </div>
 
+                <div style="background: #f8f9fa; border-radius: 8px; padding: 20px; margin-top: 15px;">
+                    <h3 style="margin-bottom: 15px; color: #333;">📊 Yıllık Özet</h3>
+                    <div id="yillik-ozet" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;"></div>
+                </div>
+
+                <div style="background: #f8f9fa; border-radius: 8px; padding: 20px; margin-top: 15px;">
+                    <h3 style="margin-bottom: 15px; color: #333;">
+                        <i class="fas fa-search"></i> Detaylı Sonuç (JSON)
+                    </h3>
+                    <pre id="json-sonuc" style="background: #1e1e1e; color: #d4d4d4; padding: 20px; border-radius: 8px; overflow-x: auto; font-size: 13px; max-height: 500px; overflow-y: auto;"></pre>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -1096,25 +1113,216 @@ function showStep(stepNumber) {
 }
 </script>
 
-
-        </div>
-    </div>
-</div>
-
 <script>
+// CSRF Token al
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Türkçe sayı parse
+function parseTurkishNumber(value) {
+    if (typeof value === 'number') return value;
+    let s = String(value).trim();
+    ['₺', 'TL', 'gün', 'saat', '%'].forEach(u => s = s.replace(u, ''));
+    s = s.trim();
+    if (!s) return 0;
+    s = s.replace(/\./g, '').replace(',', '.');
+    return parseFloat(s) || 0;
+}
+
+// Form verilerini topla
+function collectFormData() {
+    const data = { yil: 2026 };
+
+    for (let ay = 1; ay <= 12; ay++) {
+        const ayKey = `ay_${ay}`;
+        data[ayKey] = {};
+
+        // Adım 1: Temel Ücret
+        const step1Rows = document.querySelectorAll('#step1 .yearly-row');
+        if (step1Rows[ay - 1]) {
+            const row = step1Rows[ay - 1];
+
+            const brutInput = row.querySelector('.col-amount input');
+            if (brutInput) data[ayKey].brut = parseTurkishNumber(brutInput.value);
+
+            const engSelect = row.querySelector('.col-engellilik select');
+            if (engSelect) {
+                const v = engSelect.value;
+                data[ayKey].engellilik = v.includes('1') ? 1 : v.includes('2') ? 2 : v.includes('3') ? 3 : 0;
+            }
+        }
+
+        // Adım 2: Çalışma Bilgileri
+        const step2Rows = document.querySelectorAll('#step2 .yearly-row-calisma');
+        if (step2Rows[ay - 1]) {
+            const row = step2Rows[ay - 1];
+
+            const birAySelect = row.querySelector('.col-gun-sayisi select');
+            if (birAySelect) data[ayKey].takvim_esasli = birAySelect.value === 'Takvim Günü';
+
+            const gunInput = row.querySelector('.col-calisilan input');
+            if (gunInput) data[ayKey].gun = parseTurkishNumber(gunInput.value);
+        }
+
+        // Adım 3: Sosyal Güvenlik
+        const step3Rows = document.querySelectorAll('#step3 .yearly-row-sgk');
+        if (step3Rows[ay - 1]) {
+            const row = step3Rows[ay - 1];
+
+            const sgkSelect = row.querySelector('.col-sgk-tipi select');
+            if (sgkSelect) {
+                const sgkCode = sgkSelect.value.split('-')[0].trim();
+                data[ayKey].sgk_tipi = sgkCode;
+            }
+
+            const kanunSelect = row.querySelector('.col-kanun select');
+            if (kanunSelect) data[ayKey].kanun_kodu = kanunSelect.value.split(' ')[0].trim();
+
+            const besCheckbox = row.querySelector('.col-bes input[type="checkbox"]');
+            if (besCheckbox) data[ayKey].bes_aktif = besCheckbox.checked;
+        }
+    }
+
+    // Genel parametreler (ilk aydan al)
+    const ilkAy = data['ay_1'] || {};
+    data.sgk_tipi = ilkAy.sgk_tipi || '01';
+    data.kanun_kodu = ilkAy.kanun_kodu || '00000';
+    data.bes_aktif = ilkAy.bes_aktif || false;
+    data.engellilik_derecesi = ilkAy.engellilik || 0;
+    data.takvim_esasli = ilkAy.takvim_esasli !== false;
+
+    return data;
+}
+
+// Hesapla ve sonucu göster
+async function hesaplaVeYonlendir() {
+    // Loading göster
+    const overlay = document.createElement('div');
+    overlay.id = 'loading-overlay';
+    overlay.innerHTML = `
+        <div style="background:white;padding:40px 60px;border-radius:12px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,0.3);">
+            <i class="fas fa-spinner fa-spin" style="font-size:48px;color:#667eea;"></i>
+            <p style="margin-top:20px;font-size:18px;color:#333;">Hesaplanıyor...</p>
+        </div>
+    `;
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);display:flex;justify-content:center;align-items:center;z-index:9999;';
+    document.body.appendChild(overlay);
+
+    try {
+        const formData = collectFormData();
+        console.log('Gönderilen veri:', formData);
+
+        const response = await fetch('{% url "yillik_hesapla_api" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(formData)
+        });
+
+        const result = await response.json();
+        console.log('Sonuç:', result);
+
+        // Loading kaldır
+        document.body.removeChild(overlay);
+
+        if (result.success) {
+            // Sonucu sayfada göster
+            sonucGoster(result);
+        } else {
+            alert('Hesaplama hatası: ' + (result.error || 'Bilinmeyen hata'));
+            console.error('Hata detayı:', result.traceback);
+        }
+    } catch (error) {
+        const loadingOverlay = document.getElementById('loading-overlay');
+        if (loadingOverlay) document.body.removeChild(loadingOverlay);
+        console.error('Bağlantı hatası:', error);
+        alert('Bağlantı hatası: ' + error.message);
+    }
+}
+
+// Sonucu sayfada göster
+function sonucGoster(result) {
+    const sonucAlani = document.getElementById('sonuc-alani');
+    const yillikOzet = document.getElementById('yillik-ozet');
+    const jsonSonuc = document.getElementById('json-sonuc');
+
+    // Yıllık özet kartları
+    const ozet = result.sonuc.yillik_ozet || {};
+    yillikOzet.innerHTML = `
+        <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; text-align: center;">
+            <div style="font-size: 12px; color: #666;">Toplam Brüt</div>
+            <div style="font-size: 18px; font-weight: bold; color: #1976d2;">${formatPara(ozet.toplam_brut)} ₺</div>
+        </div>
+        <div style="background: #e8f5e9; padding: 15px; border-radius: 8px; text-align: center;">
+            <div style="font-size: 12px; color: #666;">Toplam Net</div>
+            <div style="font-size: 18px; font-weight: bold; color: #388e3c;">${formatPara(ozet.toplam_net)} ₺</div>
+        </div>
+        <div style="background: #fff3e0; padding: 15px; border-radius: 8px; text-align: center;">
+            <div style="font-size: 12px; color: #666;">Toplam Kesinti</div>
+            <div style="font-size: 18px; font-weight: bold; color: #f57c00;">${formatPara(ozet.toplam_kesinti)} ₺</div>
+        </div>
+        <div style="background: #f3e5f5; padding: 15px; border-radius: 8px; text-align: center;">
+            <div style="font-size: 12px; color: #666;">İşveren Maliyeti</div>
+            <div style="font-size: 18px; font-weight: bold; color: #7b1fa2;">${formatPara(ozet.toplam_isveren_maliyeti)} ₺</div>
+        </div>
+        <div style="background: #ffebee; padding: 15px; border-radius: 8px; text-align: center;">
+            <div style="font-size: 12px; color: #666;">Toplam GV</div>
+            <div style="font-size: 18px; font-weight: bold; color: #c62828;">${formatPara(ozet.toplam_gv)} ₺</div>
+        </div>
+        <div style="background: #e0f2f1; padding: 15px; border-radius: 8px; text-align: center;">
+            <div style="font-size: 12px; color: #666;">Toplam SGK (İşçi)</div>
+            <div style="font-size: 18px; font-weight: bold; color: #00796b;">${formatPara(ozet.toplam_sgk_personel)} ₺</div>
+        </div>
+    `;
+
+    // JSON sonuç
+    jsonSonuc.textContent = JSON.stringify(result.sonuc, null, 2);
+
+    // Sonuç alanını göster ve scroll et
+    sonucAlani.style.display = 'block';
+    sonucAlani.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+// Para formatla
+function formatPara(sayi) {
+    if (!sayi) return '0,00';
+    return new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(sayi);
+}
+
+// Adım geçişi
 function showStep(stepNumber) {
-    document.querySelectorAll('.step-content').forEach(step => {
-        step.classList.remove('active');
-    });
-
-    document.querySelectorAll('.nav-step').forEach(btn => {
-        btn.classList.remove('active');
-    });
-
+    document.querySelectorAll('.step-content').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-step').forEach(b => b.classList.remove('active'));
     document.getElementById('step' + stepNumber).classList.add('active');
     document.querySelector('.nav-step[data-step="' + stepNumber + '"]').classList.add('active');
-
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
+
+// Sayfa yüklendiğinde
+document.addEventListener('DOMContentLoaded', function() {
+    // Tüm "Bordro Hesapla" butonlarına click event'i ekle
+    document.querySelectorAll('.btn-calculate').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+            e.preventDefault();
+            hesaplaVeYonlendir();
+        });
+    });
+
+    console.log('Yıllık hesaplama JS yüklendi');
+});
 </script>
 {% endblock %}
