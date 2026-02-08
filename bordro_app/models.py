@@ -1,22 +1,27 @@
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.models import User
 
 
 class Calisan(models.Model):
-    """Çalışan Bilgileri"""
-    ad_soyad = models.CharField(max_length=200)
-    tc_no = models.CharField(max_length=11, unique=True)
-    giris_tarihi = models.DateField()
-    cikis_tarihi = models.DateField(null=True, blank=True)
+    """Çalışan Bilgileri - Sadece Ad Soyad"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='calisanlar')
+    ad = models.CharField(max_length=100)
+    soyad = models.CharField(max_length=100)
     aktif = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         verbose_name = "Çalışan"
         verbose_name_plural = "Çalışanlar"
+        ordering = ['ad', 'soyad']
 
     def __str__(self):
-        return self.ad_soyad
+        return f"{self.ad} {self.soyad}"
+
+    @property
+    def tam_ad(self):
+        return f"{self.ad} {self.soyad}"
 
 
 class AylikBordro(models.Model):

@@ -186,7 +186,7 @@
                     <div class="form-header-bar">
                         <h2>Temel Ücret</h2>
                         <div class="header-right">
-                            <select class="header-select">
+                            <select class="action-select">
                                 <option>-</option>
                             </select>
                             <div class="action-buttons">
@@ -291,7 +291,7 @@
                     <div class="form-header-bar">
                         <h2>Çalışma Bilgileri</h2>
                         <div class="header-right">
-                            <select class="header-select">
+                            <select class="action-select">
                                 <option>-</option>
                             </select>
                             <div class="action-buttons">
@@ -347,7 +347,7 @@
                     <div class="form-header-bar">
                         <h2>Sosyal Güvenlik</h2>
                         <div class="header-right">
-                            <select class="header-select">
+                            <select class="action-select">
                                 <option>-</option>
                             </select>
                             <div class="action-buttons">
@@ -377,9 +377,8 @@
                             <div class="form-group inline">
                                 <label>Kanun No</label>
                                 <select class="form-control" name="kanun_no">
-                                    <option value="00000" selected>00000-Kanun Numarasız</option>
-                                    {% for kod, ad in sgk_kanunlari.items %}
-                                    <option value="{{ kod }}">{{ kod }}-{{ ad }}</option>
+                                    {% for kod, kanun in sgk_kanunlari.items %}
+                                    <option value="{{ kod }}" {% if kod == '00000' %}selected{% endif %}>{{ kod }}-{{ kanun.ad }}</option>
                                     {% endfor %}
                                 </select>
                             </div>
@@ -438,7 +437,7 @@
                     <div class="form-header-bar">
                         <h2>Özel Sigortalar</h2>
                         <div class="header-right">
-                            <select class="header-select">
+                            <select class="action-select">
                                 <option>-</option>
                             </select>
                             <div class="action-buttons">
@@ -497,7 +496,7 @@
                     <div class="form-header-bar">
                         <h2>Fazla Mesailer</h2>
                         <div class="header-right">
-                            <select class="header-select">
+                            <select class="action-select">
                                 <option>-</option>
                             </select>
                             <div class="action-buttons">

@@ -280,6 +280,13 @@ async function hesaplaTazminat() {
 
     try {
         const formData = collectFormData();
+
+        // Seçili çalışanı ekle
+        const select = document.querySelector('.action-select');
+        if (select && select.value) {
+            formData.calisan_id = select.value;
+        }
+
         console.log('Gönderilen veri:', formData);
 
         const response = await fetch('{% url "tazminat_hesapla_api" %}', {

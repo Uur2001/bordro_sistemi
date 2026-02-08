@@ -22,7 +22,7 @@
                 <div class="form-header-bar">
                     <h2>Temel Ücret</h2>
                     <div class="header-right">
-                        <select class="header-select">
+                        <select class="action-select">
                             <option>-</option>
                         </select>
                         <div class="action-buttons">
@@ -345,7 +345,7 @@
                 <div class="form-header-bar">
                     <h2>Çalışma Bilgileri</h2>
                     <div class="header-right">
-                        <select class="header-select">
+                        <select class="action-select">
                             <option>-</option>
                         </select>
                         <div class="action-buttons">
@@ -581,7 +581,7 @@
                 <div class="form-header-bar">
                     <h2>Sosyal Güvenlik</h2>
                     <div class="header-right">
-                        <select class="header-select">
+                        <select class="action-select">
                             <option>-</option>
                         </select>
                         <div class="action-buttons">
@@ -867,7 +867,7 @@
                 <div class="form-header-bar">
                     <h2>Özel Sigortalar</h2>
                     <div class="header-right">
-                        <select class="header-select">
+                        <select class="action-select">
                             <option>-</option>
                         </select>
                         <div class="action-buttons">
@@ -1009,7 +1009,7 @@
                 <div class="form-header-bar">
                     <h2>Fazla Mesailer</h2>
                     <div class="header-right">
-                        <select class="header-select">
+                        <select class="action-select">
                             <option>-</option>
                         </select>
                         <div class="action-buttons">
@@ -1248,6 +1248,11 @@ function collectFormData() {
     data.bes_aktif = ilkAy.bes_aktif || false;
     data.engellilik_derecesi = ilkAy.engellilik || 0;
     data.takvim_esasli = ilkAy.takvim_esasli !== false;
+
+     const select = document.querySelector('.action-select');
+    if (select && select.value) {
+        data.calisan_id = select.value;
+    }
 
     return data;
 }

@@ -1,15 +1,19 @@
-from django.shortcuts import render
+from django.shortcuts import render,redirect
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from decimal import Decimal
 import json
 
-from .models import AylikBordro, YillikBordro, Tazminat
+from .models import AylikBordro, YillikBordro, Tazminat, Calisan
 from .calculations import hesapla_bordro
 from .constants import SGK_TIPLERI, SGK_KANUNLARI, AYLAR
 from .calculations_year import yillik_bordro_hesapla
 from . import constants_year as c_year
 from .calculations_tazminat import tazminat_hesapla as hesapla_tazminat
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
+from django.contrib.auth.decorators import login_required
+from django.shortcuts import redirect
 
 
 # Ana Sayfa - Nedir
@@ -21,7 +25,7 @@ def home(request):
 def bordro_sihirbazi(request):
     return render(request, 'bordro_sihirbazi.html', {'active_page': 'nedir'})
 
-
+@login_required(login_url='giris')
 def aylik_hesapla(request):
     context = {
         'active_page': 'aylik_hesaplama',
@@ -119,6 +123,7 @@ def aylik_hesapla(request):
 
     return render(request, 'aylik_hesapla.html', context)
 
+@login_required(login_url='giris')
 def yillik_hesapla(request):
     """Yıllık hesaplama form sayfası"""
     context = {
@@ -131,6 +136,7 @@ def yillik_hesapla(request):
 
 
 @csrf_exempt
+@login_required(login_url='giris')
 def yillik_hesapla_api(request):
     """Yıllık bordro hesaplama API endpoint'i"""
     if request.method != 'POST':
@@ -170,10 +176,16 @@ def yillik_hesapla_api(request):
             takvim_esasli=takvim_esasli
         )
 
+        calisan_id = data.get('calisan_id')
+        calisan = None
+        if calisan_id:
+            calisan = Calisan.objects.filter(id=calisan_id, user=request.user).first()
+
         # Veritabanına kaydet
         yillik_ozet = sonuc.get('yillik_ozet', {})
 
         bordro = YillikBordro.objects.create(
+            calisan=calisan,
             bordro_yili=data.get('yil', 2026),
             sgk_tipi=sgk_tipi,
             kanun_kodu=kanun_kodu,
@@ -212,7 +224,7 @@ def yillik_hesapla_api(request):
             'traceback': traceback.format_exc()
         }, status=500)
 
-
+@login_required(login_url='giris')
 def yillik_sonuc(request, bordro_id):
     """Yıllık hesaplama sonuç sayfası"""
     try:
@@ -261,7 +273,7 @@ def temizle_sayi_yillik(value):
     except ValueError:
         return 0.0
 
-
+@login_required(login_url='giris')
 def tazminat_hesapla(request):
     context = {
         'active_page': 'tazminat_hesaplama',
@@ -299,6 +311,7 @@ def hesapla_ajax(request):
 
 
 @csrf_exempt
+@login_required(login_url='giris')
 def tazminat_hesapla_api(request):
     """Tazminat hesaplama API endpoint'i"""
     if request.method != 'POST':
@@ -324,6 +337,9 @@ def tazminat_hesapla_api(request):
         ihbar_dv = data.get('ihbar_dv_hesaplansin', True)
         kidem_dv = data.get('kidem_dv_hesaplansin', True)
 
+        # Çalışan ID'sini al
+        calisan_id = data.get('calisan_id')
+
         # Hesaplamayı yap
         sonuc = hesapla_tazminat(
             giris_tarihi=giris_tarihi,
@@ -339,6 +355,11 @@ def tazminat_hesapla_api(request):
             kidem_dv_hesaplansin=kidem_dv,
         )
 
+        # Çalışanı bul (varsa)
+        calisan = None
+        if calisan_id:
+            calisan = Calisan.objects.filter(id=calisan_id, user=request.user).first()
+
         # Veritabanına kaydet
         from datetime import datetime
 
@@ -349,6 +370,7 @@ def tazminat_hesapla_api(request):
                 return datetime.strptime(tarih_str, "%d.%m.%Y").date()
 
         tazminat_kayit = Tazminat.objects.create(
+            calisan=calisan,  # Çalışan ilişkilendirmesi
             giris_tarihi=parse_tarih(giris_tarihi),
             cikis_tarihi=parse_tarih(cikis_tarihi),
             kidem_disi_sure=kidem_disi_gun,
@@ -380,3 +402,241 @@ def tazminat_hesapla_api(request):
             'error': str(e),
             'traceback': traceback.format_exc()
         }, status=500)
+
+def giris_yap(request):
+    """Kullanıcı giriş sayfası"""
+    if request.user.is_authenticated:
+        return redirect('home')
+
+    context = {'active_page': 'giris'}
+
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        password = request.POST.get('password', '')
+
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            login(request, user)
+            # Önceki sayfaya veya ana sayfaya yönlendir
+            next_url = request.GET.get('next', 'home')
+            return redirect(next_url)
+        else:
+            context['error'] = 'Kullanıcı adı veya şifre hatalı!'
+
+    return render(request, 'giris.html', context)
+
+
+def kayit_ol(request):
+    """Kullanıcı kayıt sayfası"""
+    if request.user.is_authenticated:
+        return redirect('home')
+
+    context = {'active_page': 'kayit'}
+
+    if request.method == 'POST':
+        username = request.POST.get('username', '').strip()
+        email = request.POST.get('email', '').strip()
+        password = request.POST.get('password', '')
+        password2 = request.POST.get('password2', '')
+        first_name = request.POST.get('first_name', '').strip()
+        last_name = request.POST.get('last_name', '').strip()
+
+        # Validasyonlar
+        errors = []
+
+        if not username:
+            errors.append('Kullanıcı adı gerekli!')
+        elif len(username) < 3:
+            errors.append('Kullanıcı adı en az 3 karakter olmalı!')
+        elif User.objects.filter(username=username).exists():
+            errors.append('Bu kullanıcı adı zaten kullanılıyor!')
+
+        if not email:
+            errors.append('E-posta adresi gerekli!')
+        elif User.objects.filter(email=email).exists():
+            errors.append('Bu e-posta adresi zaten kayıtlı!')
+
+        if not password:
+            errors.append('Şifre gerekli!')
+        elif len(password) < 8:
+            errors.append('Şifre en az 8 karakter olmalı!')
+        elif not any(c.isupper() for c in password):
+            errors.append('Şifre en az bir büyük harf içermeli!')
+        elif not any(c.isdigit() for c in password):
+            errors.append('Şifre en az bir rakam içermeli!')
+        elif password != password2:
+            errors.append('Şifreler eşleşmiyor!')
+
+        if errors:
+            context['errors'] = errors
+            context['form_data'] = {
+                'username': username,
+                'email': email,
+                'first_name': first_name,
+                'last_name': last_name,
+            }
+        else:
+            # Kullanıcı oluştur
+            user = User.objects.create_user(
+                username=username,
+                email=email,
+                password=password,
+                first_name=first_name,
+                last_name=last_name,
+            )
+            # Otomatik giriş yap
+            login(request, user)
+            return redirect('home')
+
+    return render(request, 'kayit.html', context)
+
+
+def cikis_yap(request):
+    """Kullanıcı çıkış"""
+    logout(request)
+    return redirect('giris')
+
+
+# =====================
+# ÇALIŞAN CRUD API'LERİ
+# =====================
+
+@login_required(login_url='giris')
+def calisan_listele(request):
+    """Kullanıcının çalışanlarını listele"""
+    calisanlar = Calisan.objects.filter(user=request.user, aktif=True).order_by('ad', 'soyad')
+
+    data = [{
+        'id': c.id,
+        'ad': c.ad,
+        'soyad': c.soyad,
+        'tam_ad': c.tam_ad,
+    } for c in calisanlar]
+
+    return JsonResponse({'success': True, 'calisanlar': data})
+
+
+@csrf_exempt
+@login_required(login_url='giris')
+def calisan_ekle(request):
+    """Yeni çalışan ekle"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Sadece POST metodu kabul edilir'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+
+        ad = data.get('ad', '').strip()
+        soyad = data.get('soyad', '').strip()
+
+        if not ad or not soyad:
+            return JsonResponse({'success': False, 'error': 'Ad ve soyad zorunludur!'}, status=400)
+
+        calisan = Calisan.objects.create(
+            user=request.user,
+            ad=ad,
+            soyad=soyad,
+        )
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Çalışan başarıyla eklendi!',
+            'calisan': {
+                'id': calisan.id,
+                'ad': calisan.ad,
+                'soyad': calisan.soyad,
+                'tam_ad': calisan.tam_ad,
+            }
+        })
+
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Geçersiz JSON formatı'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@csrf_exempt
+@login_required(login_url='giris')
+def calisan_guncelle(request, calisan_id):
+    """Çalışan bilgilerini güncelle"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Sadece POST metodu kabul edilir'}, status=405)
+
+    try:
+        calisan = Calisan.objects.filter(id=calisan_id, user=request.user).first()
+        if not calisan:
+            return JsonResponse({'success': False, 'error': 'Çalışan bulunamadı!'}, status=404)
+
+        data = json.loads(request.body)
+
+        if 'ad' in data:
+            calisan.ad = data['ad'].strip()
+        if 'soyad' in data:
+            calisan.soyad = data['soyad'].strip()
+
+        calisan.save()
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Çalışan başarıyla güncellendi!',
+            'calisan': {
+                'id': calisan.id,
+                'ad': calisan.ad,
+                'soyad': calisan.soyad,
+                'tam_ad': calisan.tam_ad,
+            }
+        })
+
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Geçersiz JSON formatı'}, status=400)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@csrf_exempt
+@login_required(login_url='giris')
+def calisan_sil(request, calisan_id):
+    """Çalışanı sil (soft delete - aktif=False)"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Sadece POST metodu kabul edilir'}, status=405)
+
+    try:
+        # Kullanıcının çalışanı mı kontrol et
+        calisan = Calisan.objects.filter(id=calisan_id, user=request.user).first()
+        if not calisan:
+            return JsonResponse({'success': False, 'error': 'Çalışan bulunamadı!'}, status=404)
+
+        # Soft delete
+        calisan.aktif = False
+        calisan.save()
+
+        return JsonResponse({
+            'success': True,
+            'message': f'{calisan.tam_ad} başarıyla silindi!'
+        })
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required(login_url='giris')
+def calisan_detay(request, calisan_id):
+    """Tek çalışanın detaylarını getir"""
+    try:
+        calisan = Calisan.objects.filter(id=calisan_id, user=request.user).first()
+        if not calisan:
+            return JsonResponse({'success': False, 'error': 'Çalışan bulunamadı!'}, status=404)
+
+        return JsonResponse({
+            'success': True,
+            'calisan': {
+                'id': calisan.id,
+                'ad': calisan.ad,
+                'soyad': calisan.soyad,
+                'tam_ad': calisan.tam_ad,
+            }
+        })
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)

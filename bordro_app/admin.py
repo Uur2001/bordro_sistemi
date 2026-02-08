@@ -3,8 +3,15 @@ from .models import Calisan, AylikBordro, YillikBordro, Tazminat
 
 @admin.register(Calisan)
 class CalisanAdmin(admin.ModelAdmin):
-    list_display = ['ad_soyad', 'tc_no', 'giris_tarihi', 'aktif']
-    search_fields = ['ad_soyad', 'tc_no']
+    list_display = ['tam_ad', 'aktif', 'created_at']
+    list_filter = ['aktif']
+    search_fields = ['ad', 'soyad']
+    ordering = ['ad', 'soyad']
+
+    def tam_ad(self, obj):
+        return f"{obj.ad} {obj.soyad}"
+
+    tam_ad.short_description = 'Ad Soyad'
 
 @admin.register(AylikBordro)
 class AylikBordroAdmin(admin.ModelAdmin):

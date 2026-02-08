@@ -16,15 +16,30 @@
                 <img src="{% static 'images/logo.png' %}" alt="Finis Bordro Logo">
             </div>
             <div class="header-icons">
-                <a href="{% url 'home' %}" class="header-icon" title="Ana Sayfa">
-                    <i class="fas fa-home"></i>
+                <a href="{% url 'home' %}" class="header-icon">
+                     <i class="fas fa-home"></i>
                 </a>
-                <div class="user-icon">
-                    <i class="fas fa-user"></i>
+                {% if user.is_authenticated %}
+                 <div class="user-dropdown">
+                    <a href="#" class="user-icon" onclick="toggleUserMenu(event)">
+                        <i class="fas fa-user"></i>
+                    </a>
+                    <div class="user-menu" id="userMenu">
+                        <div class="user-menu-header">
+                            <strong>{{ user.first_name|default:user.username }}</strong>
+                            <small>{{ user.email }}</small>
+                        </div>
+                        <a href="{% url 'cikis' %}" class="user-menu-item">
+                            <i class="fas fa-sign-out-alt"></i> Çıkış Yap
+                        </a>
+                    </div>
                 </div>
-            </div>
-        </div>
-    </header>
+                {% else %}
+                <a href="{% url 'giris' %}" class="user-icon">
+                    <i class="fas fa-user"></i>
+                </a>
+                {% endif %}
+            </div> </div> </header>
 
     <main>
         {% block content %}{% endblock %}
@@ -37,7 +52,7 @@
     </footer>
 
     <script>
-        // Dropdown menü işlevselliği
+                // Dropdown menü işlevselliği
         function toggleDropdown(dropdownId) {
             const dropdown = document.getElementById(dropdownId);
             const button = dropdown.previousElementSibling;
@@ -54,6 +69,18 @@
             dropdown.classList.toggle('show');
             button.classList.toggle('active');
         }
+        function toggleUserMenu(e) {
+            e.preventDefault();
+            document.getElementById('userMenu').classList.toggle('show');
+        }
+
+        // Dışarı tıklayınca kapat
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.user-dropdown')) {
+                const menu = document.getElementById('userMenu');
+                if (menu) menu.classList.remove('show');
+            }
+        });
 
         // Dropdown dışına tıklandığında kapat
         document.addEventListener('click', function(event) {
@@ -67,5 +94,6 @@
             }
         });
     </script>
+    <script src="{% static 'js/calisan_yonetimi.js' %}"></script>
 </body>
 </html>
