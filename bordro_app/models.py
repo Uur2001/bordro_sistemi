@@ -4,7 +4,6 @@ from django.contrib.auth.models import User
 
 
 class Calisan(models.Model):
-    """Çalışan Bilgileri - Sadece Ad Soyad"""
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='calisanlar')
     ad = models.CharField(max_length=100)
     soyad = models.CharField(max_length=100)
@@ -25,7 +24,6 @@ class Calisan(models.Model):
 
 
 class AylikBordro(models.Model):
-    """Aylık Bordro Hesaplaması"""
     BRUT_NET_CHOICES = [
         ('brut', 'Brüt'),
         ('net', 'Net'),
@@ -39,8 +37,6 @@ class AylikBordro(models.Model):
     ]
 
     calisan = models.ForeignKey(Calisan, on_delete=models.CASCADE, related_name='bordrolar', null=True, blank=True)
-
-    # Temel Ücret
     bordro_ay = models.IntegerField(choices=[(i, i) for i in range(1, 13)])
     bordro_yil = models.IntegerField()
     aylik_temel_ucret = models.DecimalField(max_digits=12, decimal_places=2)
@@ -50,34 +46,23 @@ class AylikBordro(models.Model):
     engellilik_durumu = models.CharField(max_length=20, choices=ENGELLILIK_CHOICES, default='normal')
     yillik_gv_matrahi = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     yillik_asg_ucret_gv_matrahi = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-
-    # Çalışma Bilgileri
     gun_sayisi_tipi = models.CharField(max_length=20, default='takvim')
     calisilan_gun = models.IntegerField(default=30)
     eksik_saat = models.DecimalField(max_digits=6, decimal_places=2, default=0)
-
-    # Sosyal Güvenlik
     sgk_tipi = models.CharField(max_length=100, default='01')
     kanun_no = models.CharField(max_length=20, default='00000')
     hazine_yardimi = models.BooleanField(default=True)
     bes = models.BooleanField(default=False)
     devir_matrah_2ay = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     devir_matrah_1ay = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-
-    # Özel Sigortalar
     saglik_sig_isci = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     saglik_sig_isveren = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     hayat_sig_isci = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     hayat_sig_isveren = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-
-    # Fazla Mesailer
     fm01_saat = models.DecimalField(max_digits=6, decimal_places=2, default=0)
     fm02_saat = models.DecimalField(max_digits=6, decimal_places=2, default=0)
     fm03_saat = models.DecimalField(max_digits=6, decimal_places=2, default=0)
-
-    # Hesaplama Sonuçları (JSON olarak saklanabilir)
     hesaplama_sonuc = models.JSONField(null=True, blank=True)
-
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -91,7 +76,6 @@ class AylikBordro(models.Model):
 
 
 class YillikBordro(models.Model):
-    """Yıllık Bordro Hesaplaması"""
     ENGELLILIK_CHOICES = [
         ('normal', 'Normal'),
         ('1_derece', '1. Derece'),
@@ -102,25 +86,19 @@ class YillikBordro(models.Model):
     calisan = models.ForeignKey(Calisan, on_delete=models.CASCADE, related_name='yillik_bordrolar', null=True,
                                 blank=True)
     bordro_yili = models.IntegerField()
-
-    # Parametreler
     sgk_tipi = models.CharField(max_length=10, default='01')
     kanun_kodu = models.CharField(max_length=10, default='00000')
     bes_aktif = models.BooleanField(default=False)
     engellilik_derecesi = models.CharField(max_length=20, choices=ENGELLILIK_CHOICES, default='normal')
     takvim_esasli = models.BooleanField(default=True)
-
     aylik_veriler = models.JSONField()
-
     aylik_sonuclar = models.JSONField(null=True, blank=True)
     yillik_ozet = models.JSONField(null=True, blank=True)
-
     toplam_brut = models.DecimalField(max_digits=14, decimal_places=2, default=0)
     toplam_net = models.DecimalField(max_digits=14, decimal_places=2, default=0)
     toplam_gv = models.DecimalField(max_digits=14, decimal_places=2, default=0)
     toplam_sgk_isci = models.DecimalField(max_digits=14, decimal_places=2, default=0)
     toplam_isveren_maliyeti = models.DecimalField(max_digits=14, decimal_places=2, default=0)
-
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

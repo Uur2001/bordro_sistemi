@@ -1,33 +1,24 @@
-// ===== WIZARD ADIM GEÇİŞ FONKSİYONLARI =====
 
 function goToStep(stepNumber) {
-    // Tüm step içeriklerini gizle
     const allSteps = document.querySelectorAll('.step-content');
     allSteps.forEach(step => step.classList.remove('active'));
-
-    // Tüm step butonlarından active sınıfını kaldır
     const allButtons = document.querySelectorAll('.wizard-steps .step-button');
     allButtons.forEach(btn => btn.classList.remove('active'));
-
-    // Seçilen step'i göster
     const targetStep = document.getElementById('step' + stepNumber);
     if (targetStep) {
         targetStep.classList.add('active');
     }
 
-    // Seçilen butonu aktif yap
     const targetButton = document.querySelector(`.wizard-steps .step-button[data-step="${stepNumber}"]`);
     if (targetButton) {
         targetButton.classList.add('active');
     }
 
-    // Breadcrumb'daki adım numarasını güncelle
     const stepText = document.getElementById('currentStepText');
     if (stepText) {
         stepText.textContent = stepNumber;
     }
 
-    // Önceki adımları tamamlanmış olarak işaretle
     allButtons.forEach(btn => {
         const btnStep = parseInt(btn.getAttribute('data-step'));
         if (btnStep < stepNumber) {
@@ -40,10 +31,7 @@ function goToStep(stepNumber) {
     console.log('Adım değişti:', stepNumber);
 }
 
-// Sayfa yüklendiğinde çalışacak kodlar
 document.addEventListener('DOMContentLoaded', function() {
-
-    // Sol menüdeki Wizard adım butonları için tıklama olayı
     const stepButtons = document.querySelectorAll('.wizard-steps .step-button');
     stepButtons.forEach(button => {
         button.addEventListener('click', function() {
@@ -52,7 +40,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Toggle switch'leri için
     const toggleSwitches = document.querySelectorAll('.toggle-switch input');
     toggleSwitches.forEach(toggle => {
         toggle.addEventListener('change', function() {
@@ -67,7 +54,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Para formatı için input maskeleme
     const moneyInputs = document.querySelectorAll('input[id*="Ucret"], input[id*="Matrahi"]');
     moneyInputs.forEach(input => {
         input.addEventListener('blur', function() {
@@ -78,7 +64,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // Bordro Hesapla butonları için
     const calculateBtns = document.querySelectorAll('.btn-calculate');
     calculateBtns.forEach(btn => {
         btn.addEventListener('click', function() {

@@ -1144,6 +1144,12 @@
                     <summary style="cursor: pointer; color: #64748b; font-size: 0.9rem;">🔍 Detaylı Sonuç (JSON)</summary>
                     <pre id="json-sonuc" style="background: #1e293b; color: #e2e8f0; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; font-size: 0.8rem; margin-top: 0.5rem; max-height: 500px; overflow-y: auto;"></pre>
                 </details>
+                <div id="excel-buton-alani" style="margin-top: 1.5rem; text-align: center; display: none;">
+                    <a href="#" id="btn-yillik-excel" class="btn-export-excel">
+                        <i class="fas fa-file-excel"></i> Excel İndir
+                    </a>
+                </div>
+
             </div>
         </div>
     </div>
@@ -1335,7 +1341,13 @@ function sonucGoster(result) {
 
     jsonSonuc.textContent = JSON.stringify(result.sonuc, null, 2);
     sonucAlani.style.display = 'block';
-    sonucAlani.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    sonucAlani.scrollIntoView({behavior: 'smooth', block: 'start'});
+    const excelButonAlani = document.getElementById('excel-buton-alani');
+    const excelButon = document.getElementById('btn-yillik-excel');
+    if (excelButonAlani && excelButon && result.bordro_id) {
+        excelButon.href = `/api/export/yillik/${result.bordro_id}/excel/`;
+        excelButonAlani.style.display = 'block';
+    }
 }
 
 function formatPara(sayi) {

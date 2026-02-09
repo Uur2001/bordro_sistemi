@@ -1,0 +1,101 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Kayıt Ol{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h2>Kayıt Ol</h2>
+                <p>Yeni hesap oluşturun</p>
+            </div>
+            
+            {% if errors %}
+            <div class="auth-error">
+                <ul>
+                    {% for error in errors %}
+                    <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+            
+            <form method="post" class="auth-form">
+                {% csrf_token %}
+                
+                <div class="form-row-auth">
+                    <div class="form-group-auth">
+                        <label for="first_name">
+                            <i class="fas fa-user"></i> Ad
+                        </label>
+                        <input type="text" id="first_name" name="first_name" 
+                               class="form-control"
+                               placeholder="Adınız"
+                               value="{{ form_data.first_name|default:'' }}">
+                    </div>
+                    
+                    <div class="form-group-auth">
+                        <label for="last_name">
+                            <i class="fas fa-user"></i> Soyad
+                        </label>
+                        <input type="text" id="last_name" name="last_name" 
+                               class="form-control"
+                               placeholder="Soyadınız"
+                               value="{{ form_data.last_name|default:'' }}">
+                    </div>
+                </div>
+                
+                <div class="form-group-auth">
+                    <label for="username">
+                        <i class="fas fa-at"></i> Kullanıcı Adı *
+                    </label>
+                    <input type="text" id="username" name="username" 
+                           class="form-control" required
+                           placeholder="Kullanıcı adı seçin"
+                           value="{{ form_data.username|default:'' }}">
+                </div>
+                
+                <div class="form-group-auth">
+                    <label for="email">
+                        <i class="fas fa-envelope"></i> E-posta *
+                    </label>
+                    <input type="email" id="email" name="email" 
+                           class="form-control" required
+                           placeholder="E-posta adresiniz"
+                           value="{{ form_data.email|default:'' }}">
+                </div>
+                
+                <div class="form-row-auth">
+                    <div class="form-group-auth">
+                        <label for="password">
+                            <i class="fas fa-lock"></i> Şifre *
+                        </label>
+                        <input type="password" id="password" name="password" 
+                               class="form-control" required
+                               placeholder="Şifre, en az 8 karakter,1 büyük harf, 1 rakam içermeli!">
+                    </div>
+                    
+                    <div class="form-group-auth">
+                        <label for="password2">
+                            <i class="fas fa-lock"></i> Şifre Tekrar *
+                        </label>
+                        <input type="password" id="password2" name="password2" 
+                               class="form-control" required
+                               placeholder="Şifreyi tekrar girin">
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn-auth-primary">
+                    <i class="fas fa-user-plus"></i> Kayıt Ol
+                </button>
+            </form>
+            
+            <div class="auth-footer">
+                <p>Zaten hesabınız var mı? <a href="{% url 'giris' %}">Giriş Yap</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

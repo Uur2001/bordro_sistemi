@@ -19,4 +19,7 @@ urlpatterns = [
     path('api/calisan/<int:calisan_id>/', views.calisan_detay, name='calisan_detay'),
     path('api/calisan/<int:calisan_id>/guncelle/', views.calisan_guncelle, name='calisan_guncelle'),
     path('api/calisan/<int:calisan_id>/sil/', views.calisan_sil, name='calisan_sil'),
+    path('api/export/aylik/<int:bordro_id>/excel/', views.export_aylik_excel, name='export_aylik_excel'),
+    path('api/export/yillik/<int:bordro_id>/excel/', views.export_yillik_excel, name='export_yillik_excel'),
+    path('api/export/tazminat/<int:tazminat_id>/excel/', views.export_tazminat_excel, name='export_tazminat_excel'),
 ]

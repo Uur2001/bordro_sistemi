@@ -100,9 +100,9 @@ def tazminat_hesapla(
         kidem_sonuc['gun']['birim_tutar'] = round(kidem_matrahi / 365, 2)
         kidem_sonuc['gun']['tutar'] = round(kidem_matrahi / 365 * net_gun, 2)
         kidem_sonuc['brut_toplam'] = round(
-            kidem_sonuc['yil']['tutar'] +
-            kidem_sonuc['ay']['tutar'] +
-            kidem_sonuc['gun']['tutar'], 2
+        kidem_sonuc['yil']['tutar'] +
+        kidem_sonuc['ay']['tutar'] +
+        kidem_sonuc['gun']['tutar'], 2
         )
 
         if kidem_dv_hesaplansin:

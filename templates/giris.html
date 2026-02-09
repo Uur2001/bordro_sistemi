@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Giriş Yap{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+              <h2>Giriş Yap</h2>
+              <p>Hesabınıza giriş yapın</p>
+        </div>
+            
+            {% if error %}
+            <div class="auth-error">
+                <i class="fas fa-exclamation-circle"></i>
+                {{ error }}
+            </div>
+            {% endif %}
+            
+            <form method="post" class="auth-form">
+                {% csrf_token %}
+                
+                <div class="form-group-auth">
+                    <label for="username">
+                        <i class="fas fa-user"></i> Kullanıcı Adı
+                    </label>
+                    <input type="text" id="username" name="username" 
+                           class="form-control" required 
+                           placeholder="Kullanıcı adınızı girin">
+                </div>
+                
+                <div class="form-group-auth">
+                    <label for="password">
+                        <i class="fas fa-lock"></i> Şifre
+                    </label>
+                    <input type="password" id="password" name="password" 
+                           class="form-control" required
+                           placeholder="Şifrenizi girin">
+                </div>
+                
+                <button type="submit" class="btn-auth-primary">
+                    <i class="fas fa-sign-in-alt"></i> Giriş Yap
+                </button>
+            </form>
+            
+            <div class="auth-footer">
+                <p>Hesabınız yok mu? <a href="{% url 'kayit' %}">Kayıt Ol</a></p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

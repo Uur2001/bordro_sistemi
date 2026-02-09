@@ -155,8 +155,14 @@
                 <summary style="cursor: pointer; color: #64748b; font-size: 0.9rem;">🔍 Detaylı Sonuç (JSON)</summary>
                 <pre style="background: #1e293b; color: #e2e8f0; padding: 1rem; border-radius: 0.5rem; overflow-x: auto; font-size: 0.8rem; margin-top: 0.5rem;">{{ sonuc|pprint }}</pre>
             </details>
+            <div style="margin-top: 1.5rem; text-align: center;">
+                <a href="{% url 'export_aylik_excel' bordro_id %}" class="btn-export-excel">
+                    <i class="fas fa-file-excel"></i> Excel İndir
+                </a>
+            </div>
         </div>
     </div>
+
     {% endif %}
 
 
@@ -181,7 +187,7 @@
             <form class="modern-form" method="POST" action="{% url 'aylik_hesapla' %}">
                 {% csrf_token %}
                 <input type="hidden" name="bordro_yil" value="2026">
-
+                <input type="hidden" name="calisan_id" id="calisan_id_input" value="">
                 <div class="step-content active" id="step1">
                     <div class="form-header-bar">
                         <h2>Temel Ücret</h2>
@@ -565,6 +571,17 @@ function showStep(stepNumber) {
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
+document.addEventListener('DOMContentLoaded', function() {
+    const select = document.querySelector('.action-select');
+    const hiddenInput = document.getElementById('calisan_id_input');
+
+    if (select && hiddenInput) {
+        hiddenInput.value = select.value;
+        select.addEventListener('change', function() {
+            hiddenInput.value = this.value;
+        });
+    }
+});
 
 document.addEventListener('DOMContentLoaded', function() {
     const backendData = document.getElementById('backend-data');
@@ -579,7 +596,6 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Ay günleri yüklendi:', ayGunleri);
     } catch (error) {
         console.error(' AYLAR verisi yüklenemedi:', error);
-        // Fallback - Hard-coded değerler
         ayGunleri = {
             1: 31, 2: 28, 3: 31, 4: 30, 5: 31, 6: 30,
             7: 31, 8: 31, 9: 30, 10: 31, 11: 30, 12: 31

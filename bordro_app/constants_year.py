@@ -453,8 +453,6 @@ ENGELLILIK_INDIRIMLERI = {
     '3': 3500,
     '3_derece': 3500,
 }
-
-# --- AYLAR ---
 AYLAR = {
     1: {"ad": "Ocak", "gun": 31},
     2: {"ad": "Şubat", "gun": 28},

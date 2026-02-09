@@ -1,9 +1,8 @@
 from django.shortcuts import render,redirect
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from decimal import Decimal
 import json
-
 from .models import AylikBordro, YillikBordro, Tazminat, Calisan
 from .calculations import hesapla_bordro
 from .constants import SGK_TIPLERI, SGK_KANUNLARI, AYLAR
@@ -14,14 +13,13 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
+from .exports import create_aylik_bordro_excel, create_yillik_bordro_excel, create_tazminat_excel
 
 
-# Ana Sayfa - Nedir
 def home(request):
     return render(request, 'home.html', {'active_page': 'nedir'})
 
 
-# Bordro Sihirbazı Ana Sayfa
 def bordro_sihirbazi(request):
     return render(request, 'bordro_sihirbazi.html', {'active_page': 'nedir'})
 
@@ -37,20 +35,14 @@ def aylik_hesapla(request):
 
     if request.method == 'POST':
         try:
-            # Yardımcı fonksiyon - Metin temizleme
             def temizle_sayi(value):
-                """Sayıdan TL, saat, nokta, virgül gibi karakterleri temizler ve float döner"""
                 if not value:
                     return 0.0
                 value = value.replace('₺', '').replace('saat', '').replace(' ', '').strip()
                 value = value.replace('.', '').replace(',', '.')
                 return float(value) if value else 0.0
-
-            # Parametreleri doğru isimlerle hazırla
             yil = int(request.POST.get('bordro_yil', 2026))
             ay = int(request.POST.get('bordro_ay', 1))
-
-            # Hesaplama fonksiyonunu çağır - FLOAT değerlerle
             sonuc = hesapla_bordro(
                 aylik_brut_ucret=temizle_sayi(request.POST.get('aylik_temel_ucret', '0')),
                 ay=ay,
@@ -78,9 +70,16 @@ def aylik_hesapla(request):
                 sgk_tipi=request.POST.get('sgk_tipi', '01'),
                 kanun_kodu=request.POST.get('kanun_no') if request.POST.get('kanun_no') != '00000' else None,
             )
+            calisan_id = request.POST.get('calisan_id', '')
+            calisan = None
+            if calisan_id and calisan_id not in ['', '-', 'None']:
+                try:
+                    calisan = Calisan.objects.filter(id=int(calisan_id), user=request.user).first()
+                except (ValueError, TypeError):
+                    calisan = None
 
-            # Veritabanına kaydet - Decimal ile
             bordro = AylikBordro.objects.create(
+                calisan=calisan,
                 bordro_yil=yil,
                 bordro_ay=ay,
                 aylik_temel_ucret=Decimal(str(temizle_sayi(request.POST.get('aylik_temel_ucret', '0')))),
@@ -125,7 +124,6 @@ def aylik_hesapla(request):
 
 @login_required(login_url='giris')
 def yillik_hesapla(request):
-    """Yıllık hesaplama form sayfası"""
     context = {
         'active_page': 'yillik_hesaplama',
         'sgk_tipleri': c_year.SOSYAL_GUVENLIK_TIPI,
@@ -134,39 +132,28 @@ def yillik_hesapla(request):
     }
     return render(request, 'yillik_hesapla.html', context)
 
-
 @csrf_exempt
 @login_required(login_url='giris')
 def yillik_hesapla_api(request):
-    """Yıllık bordro hesaplama API endpoint'i"""
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'Sadece POST metodu kabul edilir'}, status=405)
-
     try:
         data = json.loads(request.body)
-
-        # Aylık verileri hazırla
         aylik_veriler = []
         for ay in range(1, 13):
             ay_key = f'ay_{ay}'
             ay_data = data.get(ay_key, {})
-
             brut = temizle_sayi_yillik(ay_data.get('brut', '33030'))
             gun = int(temizle_sayi_yillik(ay_data.get('gun', '30')))
-
             aylik_veriler.append({
                 'brut': brut,
                 'gun': gun
             })
-
-        # Genel parametreler
         sgk_tipi = data.get('sgk_tipi', '01')
         kanun_kodu = data.get('kanun_kodu', '00000')
         bes_aktif = data.get('bes_aktif', False)
         engellilik_derecesi = int(data.get('engellilik_derecesi', 0))
         takvim_esasli = data.get('takvim_esasli', True)
-
-        # Hesaplamayı yap
         sonuc = yillik_bordro_hesapla(
             aylik_veriler=aylik_veriler,
             sgk_tipi=sgk_tipi,
@@ -175,15 +162,14 @@ def yillik_hesapla_api(request):
             engellilik_derecesi=engellilik_derecesi,
             takvim_esasli=takvim_esasli
         )
-
-        calisan_id = data.get('calisan_id')
+        calisan_id = data.get('calisan_id', '')
         calisan = None
-        if calisan_id:
-            calisan = Calisan.objects.filter(id=calisan_id, user=request.user).first()
-
-        # Veritabanına kaydet
+        if calisan_id and calisan_id not in ['', '-', 'None']:
+            try:
+                calisan = Calisan.objects.filter(id=int(calisan_id), user=request.user).first()
+            except (ValueError, TypeError):
+                calisan = None
         yillik_ozet = sonuc.get('yillik_ozet', {})
-
         bordro = YillikBordro.objects.create(
             calisan=calisan,
             bordro_yili=data.get('yil', 2026),
@@ -201,8 +187,6 @@ def yillik_hesapla_api(request):
             toplam_sgk_isci=Decimal(str(yillik_ozet.get('toplam_sgk_personel', 0))),
             toplam_isveren_maliyeti=Decimal(str(yillik_ozet.get('toplam_isveren_maliyeti', 0))),
         )
-
-        # Session'a kaydet (sonuç sayfası için)
         request.session['yillik_bordro_id'] = bordro.id
 
         return JsonResponse({
@@ -226,13 +210,11 @@ def yillik_hesapla_api(request):
 
 @login_required(login_url='giris')
 def yillik_sonuc(request, bordro_id):
-    """Yıllık hesaplama sonuç sayfası"""
     try:
         bordro = YillikBordro.objects.get(id=bordro_id)
     except YillikBordro.DoesNotExist:
         from django.shortcuts import redirect
         return redirect('yillik_hesapla')
-
     context = {
         'active_page': 'yillik_hesaplama',
         'bordro': bordro,
@@ -250,13 +232,10 @@ def yillik_sonuc(request, bordro_id):
 
 
 def temizle_sayi_yillik(value):
-    """Türkçe sayı formatını Python float'a çevirir"""
     if isinstance(value, (int, float)):
         return float(value)
 
     s = str(value).strip()
-
-    # Birim ve sembolleri kaldır
     for unit in ['₺', 'TL', 'gün', 'saat', '%']:
         s = s.replace(unit, '')
 
@@ -264,9 +243,8 @@ def temizle_sayi_yillik(value):
     if not s:
         return 0.0
 
-    # Türkçe format: 33.030,00 -> 33030.00
-    s = s.replace('.', '')  # Binlik ayracını kaldır
-    s = s.replace(',', '.')  # Virgülü noktaya çevir
+    s = s.replace('.', '')
+    s = s.replace(',', '.')
 
     try:
         return float(s)
@@ -280,16 +258,11 @@ def tazminat_hesapla(request):
     }
     return render(request, 'tazminat_hesapla.html', context)
 
-
-# AJAX için hesaplama endpoint'i
 @csrf_exempt
 def hesapla_ajax(request):
-    """JavaScript'ten AJAX ile çağrılacak hesaplama endpoint'i"""
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-
-            # String değerleri Decimal'e çevir
             for key in ['aylik_temel_ucret', 'yillik_gv_matrahi', 'yillik_asg_ucret_gv_matrahi',
                         'devir_matrah_2ay', 'devir_matrah_1ay', 'saglik_sig_isci',
                         'saglik_sig_isveren', 'hayat_sig_isci', 'hayat_sig_isveren',
@@ -309,38 +282,26 @@ def hesapla_ajax(request):
 
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
 
-
 @csrf_exempt
 @login_required(login_url='giris')
 def tazminat_hesapla_api(request):
-    """Tazminat hesaplama API endpoint'i"""
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'Sadece POST metodu kabul edilir'}, status=405)
 
     try:
         data = json.loads(request.body)
-
-        # Tarihleri al
         giris_tarihi = data.get('giris_tarihi', '')
         cikis_tarihi = data.get('cikis_tarihi', '')
-
-        # Ücretleri al ve temizle
         aylik_brut = temizle_sayi_yillik(data.get('aylik_brut_ucret', '0'))
         aylik_ek = temizle_sayi_yillik(data.get('aylik_brut_ek_ucret', '0'))
         yillik_ikramiye = temizle_sayi_yillik(data.get('yillik_brut_ikramiye', '0'))
         kidem_disi_gun = int(temizle_sayi_yillik(data.get('kidem_disi_gun', '0')))
         kumulatif_gv = temizle_sayi_yillik(data.get('kumulatif_gv_matrahi', '0'))
-
-        # Parametreleri al
         ihbar_hesaplansin = data.get('ihbar_hesaplansin', True)
         ihbar_gv = data.get('ihbar_gv_hesaplansin', True)
         ihbar_dv = data.get('ihbar_dv_hesaplansin', True)
         kidem_dv = data.get('kidem_dv_hesaplansin', True)
-
-        # Çalışan ID'sini al
         calisan_id = data.get('calisan_id')
-
-        # Hesaplamayı yap
         sonuc = hesapla_tazminat(
             giris_tarihi=giris_tarihi,
             cikis_tarihi=cikis_tarihi,
@@ -355,12 +316,14 @@ def tazminat_hesapla_api(request):
             kidem_dv_hesaplansin=kidem_dv,
         )
 
-        # Çalışanı bul (varsa)
+        calisan_id = data.get('calisan_id', '')
         calisan = None
-        if calisan_id:
-            calisan = Calisan.objects.filter(id=calisan_id, user=request.user).first()
+        if calisan_id and calisan_id not in ['', '-', 'None']:
+            try:
+                calisan = Calisan.objects.filter(id=int(calisan_id), user=request.user).first()
+            except (ValueError, TypeError):
+                calisan = None
 
-        # Veritabanına kaydet
         from datetime import datetime
 
         def parse_tarih(tarih_str):
@@ -370,7 +333,7 @@ def tazminat_hesapla_api(request):
                 return datetime.strptime(tarih_str, "%d.%m.%Y").date()
 
         tazminat_kayit = Tazminat.objects.create(
-            calisan=calisan,  # Çalışan ilişkilendirmesi
+            calisan=calisan,
             giris_tarihi=parse_tarih(giris_tarihi),
             cikis_tarihi=parse_tarih(cikis_tarihi),
             kidem_disi_sure=kidem_disi_gun,
@@ -404,21 +367,17 @@ def tazminat_hesapla_api(request):
         }, status=500)
 
 def giris_yap(request):
-    """Kullanıcı giriş sayfası"""
     if request.user.is_authenticated:
         return redirect('home')
-
     context = {'active_page': 'giris'}
 
     if request.method == 'POST':
         username = request.POST.get('username', '').strip()
         password = request.POST.get('password', '')
-
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
             login(request, user)
-            # Önceki sayfaya veya ana sayfaya yönlendir
             next_url = request.GET.get('next', 'home')
             return redirect(next_url)
         else:
@@ -428,7 +387,6 @@ def giris_yap(request):
 
 
 def kayit_ol(request):
-    """Kullanıcı kayıt sayfası"""
     if request.user.is_authenticated:
         return redirect('home')
 
@@ -441,8 +399,6 @@ def kayit_ol(request):
         password2 = request.POST.get('password2', '')
         first_name = request.POST.get('first_name', '').strip()
         last_name = request.POST.get('last_name', '').strip()
-
-        # Validasyonlar
         errors = []
 
         if not username:
@@ -477,7 +433,6 @@ def kayit_ol(request):
                 'last_name': last_name,
             }
         else:
-            # Kullanıcı oluştur
             user = User.objects.create_user(
                 username=username,
                 email=email,
@@ -485,26 +440,17 @@ def kayit_ol(request):
                 first_name=first_name,
                 last_name=last_name,
             )
-            # Otomatik giriş yap
             login(request, user)
             return redirect('home')
 
     return render(request, 'kayit.html', context)
 
-
 def cikis_yap(request):
-    """Kullanıcı çıkış"""
     logout(request)
     return redirect('giris')
 
-
-# =====================
-# ÇALIŞAN CRUD API'LERİ
-# =====================
-
 @login_required(login_url='giris')
 def calisan_listele(request):
-    """Kullanıcının çalışanlarını listele"""
     calisanlar = Calisan.objects.filter(user=request.user, aktif=True).order_by('ad', 'soyad')
 
     data = [{
@@ -520,13 +466,11 @@ def calisan_listele(request):
 @csrf_exempt
 @login_required(login_url='giris')
 def calisan_ekle(request):
-    """Yeni çalışan ekle"""
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'Sadece POST metodu kabul edilir'}, status=405)
 
     try:
         data = json.loads(request.body)
-
         ad = data.get('ad', '').strip()
         soyad = data.get('soyad', '').strip()
 
@@ -559,7 +503,6 @@ def calisan_ekle(request):
 @csrf_exempt
 @login_required(login_url='giris')
 def calisan_guncelle(request, calisan_id):
-    """Çalışan bilgilerini güncelle"""
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'Sadece POST metodu kabul edilir'}, status=405)
 
@@ -597,20 +540,15 @@ def calisan_guncelle(request, calisan_id):
 @csrf_exempt
 @login_required(login_url='giris')
 def calisan_sil(request, calisan_id):
-    """Çalışanı sil (soft delete - aktif=False)"""
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'Sadece POST metodu kabul edilir'}, status=405)
 
     try:
-        # Kullanıcının çalışanı mı kontrol et
         calisan = Calisan.objects.filter(id=calisan_id, user=request.user).first()
         if not calisan:
             return JsonResponse({'success': False, 'error': 'Çalışan bulunamadı!'}, status=404)
-
-        # Soft delete
         calisan.aktif = False
         calisan.save()
-
         return JsonResponse({
             'success': True,
             'message': f'{calisan.tam_ad} başarıyla silindi!'
@@ -622,7 +560,6 @@ def calisan_sil(request, calisan_id):
 
 @login_required(login_url='giris')
 def calisan_detay(request, calisan_id):
-    """Tek çalışanın detaylarını getir"""
     try:
         calisan = Calisan.objects.filter(id=calisan_id, user=request.user).first()
         if not calisan:
@@ -640,3 +577,95 @@ def calisan_detay(request, calisan_id):
 
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+@login_required(login_url='giris')
+def export_aylik_excel(request, bordro_id):
+    try:
+        bordro = AylikBordro.objects.filter(id=bordro_id).first()
+        if not bordro:
+            return HttpResponse("Bordro bulunamadı", status=404)
+
+        calisan_adi = bordro.calisan.tam_ad if bordro.calisan else "Anonim"
+        sonuc = bordro.hesaplama_sonuc
+
+        output = create_aylik_bordro_excel(
+            sonuc=sonuc,
+            calisan_adi=calisan_adi,
+            ay=bordro.bordro_ay,
+            yil=bordro.bordro_yil
+        )
+
+        ay_adi = sonuc.get('donem', {}).get('ay_adi', {}).get('ad', 'Ocak') if isinstance(
+            sonuc.get('donem', {}).get('ay_adi'), dict) else 'Ocak'
+        filename = f"Bordro_{bordro.bordro_yil}_{ay_adi}_{calisan_adi.replace(' ', '_')}.xlsx"
+
+        response = HttpResponse(
+            output.read(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        return response
+
+    except Exception as e:
+        return HttpResponse(f"Hata: {str(e)}", status=500)
+
+
+@login_required(login_url='giris')
+def export_yillik_excel(request, bordro_id):
+    try:
+        bordro = YillikBordro.objects.filter(id=bordro_id).first()
+        if not bordro:
+            return HttpResponse("Bordro bulunamadı", status=404)
+
+        calisan_adi = bordro.calisan.tam_ad if bordro.calisan else "Anonim"
+
+        sonuc = {
+            'aylik_sonuclar': bordro.aylik_sonuclar,
+            'yillik_ozet': bordro.yillik_ozet
+        }
+
+        output = create_yillik_bordro_excel(
+            sonuc=sonuc,
+            calisan_adi=calisan_adi,
+            yil=bordro.bordro_yili
+        )
+
+        filename = f"Yillik_Bordro_{bordro.bordro_yili}_{calisan_adi.replace(' ', '_')}.xlsx"
+
+        response = HttpResponse(
+            output.read(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        return response
+
+    except Exception as e:
+        return HttpResponse(f"Hata: {str(e)}", status=500)
+
+
+@login_required(login_url='giris')
+def export_tazminat_excel(request, tazminat_id):
+    try:
+        tazminat = Tazminat.objects.filter(id=tazminat_id).first()
+        if not tazminat:
+            return HttpResponse("Tazminat bulunamadı", status=404)
+
+        calisan_adi = tazminat.calisan.tam_ad if tazminat.calisan else "Anonim"
+        sonuc = tazminat.hesaplama_sonuc
+
+        output = create_tazminat_excel(
+            sonuc=sonuc,
+            calisan_adi=calisan_adi
+        )
+
+        filename = f"Tazminat_{calisan_adi.replace(' ', '_')}.xlsx"
+
+        response = HttpResponse(
+            output.read(),
+            content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        response['Content-Disposition'] = f'attachment; filename="{filename}"'
+        return response
+
+    except Exception as e:
+        return HttpResponse(f"Hata: {str(e)}", status=500)
