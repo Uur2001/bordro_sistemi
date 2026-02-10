@@ -1,5 +1,58 @@
 from . import constants_year as c
 
+try:
+    from bordro import net_brut_aylik
+    BORDRO_KUTUPHANESI_MEVCUT = True
+except ImportError:
+    BORDRO_KUTUPHANESI_MEVCUT = False
+
+
+def net_den_brute_cevir(
+        aylik_veriler: list,
+        sgk_tipi: str = "01",
+        engellilik_derecesi: int = 0,
+        bes_aktif: bool = True
+) -> list:
+    """
+    Net ücret listesini brüt ücret listesine çevirir.
+    bordro-hesaplama kütüphanesini kullanır.
+    """
+    if not BORDRO_KUTUPHANESI_MEVCUT:
+        raise ImportError(
+            "Net -> Brüt dönüşümü için 'bordro-hesaplama' kütüphanesi gerekli. "
+            "Kurulum: pip install bordro-hesaplama"
+        )
+
+    secilen_tip = c.SOSYAL_GUVENLIK_TIPI.get(sgk_tipi)
+    if not secilen_tip:
+        raise ValueError(f"Geçersiz SGK tipi: {sgk_tipi}")
+    engellilik_tutari = c.ENGELLILIK_INDIRIMLERI.get(engellilik_derecesi, 0)
+    brut_veriler = []
+    kumulatif_matrah = 0
+
+    for ay_index in range(12):
+        ay_no = ay_index + 1
+        ay_veri = aylik_veriler[ay_index]
+        hedef_net = ay_veri.get('net', ay_veri.get('brut', c.ASGARI_UCRET_BRUT))
+        sonuc = net_brut_aylik(
+            hedef_net=hedef_net,
+            ay=ay_no,
+            devreden_matrah=kumulatif_matrah,
+            sigorta_tipi_kodu=sgk_tipi,
+            engel_derecesi=str(engellilik_derecesi),
+            bes=bes_aktif,
+            bes_orani=c.BES_ORANI if bes_aktif else None
+        )
+
+        hesaplanan_brut = round(sonuc['brut'], 2)
+        kumulatif_matrah = sonuc['kumulatif_matrah']
+        yeni_veri = ay_veri.copy()
+        yeni_veri['brut'] = hesaplanan_brut
+        yeni_veri['orijinal_net'] = hedef_net
+
+        brut_veriler.append(yeni_veri)
+
+    return brut_veriler
 
 def vergi_hesapla(kumulatif_matrah: float, ay_matrah: float) -> float:
 
@@ -34,8 +87,16 @@ def yillik_bordro_hesapla(
         kanun_kodu: str = "00000",
         bes_aktif: bool = True,
         engellilik_derecesi: int = 0,
-        takvim_esasli: bool = True
+        takvim_esasli: bool = True,
+        ucret_tipi: str = "brut"
 ) -> dict:
+    if ucret_tipi == "net":
+        aylik_veriler = net_den_brute_cevir(
+            aylik_veriler=aylik_veriler,
+            sgk_tipi=sgk_tipi,
+            engellilik_derecesi=engellilik_derecesi,
+            bes_aktif=bes_aktif
+        )
 
     if len(aylik_veriler) != 12:
         raise ValueError(f"aylik_veriler 12 elemanlı olmalı, {len(aylik_veriler)} eleman verildi")
@@ -65,16 +126,11 @@ def yillik_bordro_hesapla(
         tam_brut = ay_veri.get('brut', c.ASGARI_UCRET_BRUT)
 
         if takvim_esasli:
-
-            gun = ay_gun_sayisi
-            if gun > 30:
-                hesap_brut = round(tam_brut * (30 / gun), 2)
-            else:
-                hesap_brut = tam_brut
+            gun = 30
+            hesap_brut = tam_brut
         else:
-
             gun = ay_veri.get('gun', 30)
-            if gun == 30:
+            if gun >= 30:
                 hesap_brut = tam_brut
             else:
                 hesap_brut = round((tam_brut / 30) * gun, 2)
@@ -179,6 +235,7 @@ def yillik_bordro_hesapla(
         "engellilik_tutari": engellilik_tutari,
         "takvim_esasli": takvim_esasli,
         "vergi_muaf": secilen_tip['Vergi_Muaf'],
+        "ucret_tipi": ucret_tipi,
     }
 
     return {
@@ -190,22 +247,43 @@ def yillik_bordro_hesapla(
 
 def aylik_veri_olustur(
         brut_liste: list = None,
+        net_liste: list = None,
         tek_brut: float = None,
+        tek_net: float = None,
         gun_liste: list = None
 ) -> list:
+    """
+    Aylık veri listesi oluşturur.
+    brut_liste veya net_liste verilebilir.
+    """
 
-    if brut_liste is None and tek_brut is None:
+    # Öncelik: brut_liste > net_liste > tek_brut > tek_net > asgari ücret
+    if brut_liste is None and net_liste is None and tek_brut is None and tek_net is None:
         tek_brut = c.ASGARI_UCRET_BRUT
 
-    if brut_liste is None:
-        brut_liste = [tek_brut] * 12
+    # Liste ve anahtar belirle
+    if brut_liste is not None:
+        deger_liste = brut_liste
+        anahtar = 'brut'
+    elif net_liste is not None:
+        deger_liste = net_liste
+        anahtar = 'net'
+    elif tek_brut is not None:
+        deger_liste = [tek_brut] * 12
+        anahtar = 'brut'
+    elif tek_net is not None:
+        deger_liste = [tek_net] * 12
+        anahtar = 'net'
+    else:
+        deger_liste = [c.ASGARI_UCRET_BRUT] * 12
+        anahtar = 'brut'
 
-    if len(brut_liste) != 12:
-        raise ValueError(f"brut_liste 12 elemanlı olmalı, {len(brut_liste)} eleman verildi")
+    if len(deger_liste) != 12:
+        raise ValueError(f"Liste 12 elemanlı olmalı, {len(deger_liste)} eleman verildi")
 
     aylik_veriler = []
     for i in range(12):
-        veri = {'brut': brut_liste[i]}
+        veri = {anahtar: deger_liste[i]}
         if gun_liste and i < len(gun_liste):
             veri['gun'] = gun_liste[i]
         aylik_veriler.append(veri)

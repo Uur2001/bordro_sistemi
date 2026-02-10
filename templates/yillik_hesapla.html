@@ -1255,9 +1255,16 @@ function collectFormData() {
     data.engellilik_derecesi = ilkAy.engellilik || 0;
     data.takvim_esasli = ilkAy.takvim_esasli !== false;
 
-     const select = document.querySelector('.action-select');
+    const select = document.querySelector('.action-select');
     if (select && select.value) {
         data.calisan_id = select.value;
+    }
+
+    const tipSelect = document.querySelector('.col-type select');
+    if (tipSelect) {
+        data.ucret_tipi = tipSelect.value === 'Net' ? 'net' : 'brut';
+    } else {
+        data.ucret_tipi = 'brut';
     }
 
     return data;
@@ -1368,6 +1375,16 @@ document.addEventListener('DOMContentLoaded', function() {
         btn.addEventListener('click', function(e) {
             e.preventDefault();
             hesaplaVeYonlendir();
+        });
+    });
+
+    const tipSelectler = document.querySelectorAll('.col-type select');
+    tipSelectler.forEach(select => {
+        select.addEventListener('change', function() {
+            const secilenDeger = this.value;
+            tipSelectler.forEach(digerSelect => {
+                digerSelect.value = secilenDeger;
+            });
         });
     });
 

@@ -69,6 +69,7 @@ def aylik_hesapla(request):
                     'engellilik_durumu') != 'normal' else None,
                 sgk_tipi=request.POST.get('sgk_tipi', '01'),
                 kanun_kodu=request.POST.get('kanun_no') if request.POST.get('kanun_no') != '00000' else None,
+                ucret_tipi=request.POST.get('ucret_tipi', 'brut'),
             )
             calisan_id = request.POST.get('calisan_id', '')
             calisan = None
@@ -139,16 +140,24 @@ def yillik_hesapla_api(request):
         return JsonResponse({'success': False, 'error': 'Sadece POST metodu kabul edilir'}, status=405)
     try:
         data = json.loads(request.body)
+        ucret_tipi = data.get('ucret_tipi', 'brut')
         aylik_veriler = []
         for ay in range(1, 13):
             ay_key = f'ay_{ay}'
             ay_data = data.get(ay_key, {})
-            brut = temizle_sayi_yillik(ay_data.get('brut', '33030'))
+            tutar = temizle_sayi_yillik(ay_data.get('brut', '33030'))
             gun = int(temizle_sayi_yillik(ay_data.get('gun', '30')))
-            aylik_veriler.append({
-                'brut': brut,
-                'gun': gun
-            })
+
+            if ucret_tipi == 'net':
+                aylik_veriler.append({
+                    'net': tutar,
+                    'gun': gun
+                })
+            else:
+                aylik_veriler.append({
+                    'brut': tutar,
+                    'gun': gun
+                })
         sgk_tipi = data.get('sgk_tipi', '01')
         kanun_kodu = data.get('kanun_kodu', '00000')
         bes_aktif = data.get('bes_aktif', False)
@@ -160,7 +169,8 @@ def yillik_hesapla_api(request):
             kanun_kodu=kanun_kodu,
             bes_aktif=bes_aktif,
             engellilik_derecesi=engellilik_derecesi,
-            takvim_esasli=takvim_esasli
+            takvim_esasli=takvim_esasli,
+            ucret_tipi=ucret_tipi
         )
         calisan_id = data.get('calisan_id', '')
         calisan = None

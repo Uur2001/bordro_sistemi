@@ -1,6 +1,12 @@
 from decimal import Decimal, ROUND_HALF_UP
 from . import constants as c
 
+try:
+    from bordro import net_brut_aylik
+    BORDRO_LIB_AVAILABLE = True
+except ImportError:
+    BORDRO_LIB_AVAILABLE = False
+
 def yuvarla(sayi, basamak=2):
 
     if sayi is None:
@@ -477,8 +483,54 @@ def hesapla_bordro(
         engellilik_derecesi=None,
         sgk_tipi='1',
         kanun_kodu=None,
-
+        ucret_tipi='brut',
+        asgari_ucret_gv_istisnasi=True,
+        damga_vergisi_istisnasi=True,
 ):
+    if ucret_tipi == 'net' and BORDRO_LIB_AVAILABLE:
+        kutuphane_sgk_kodu = f"0{sgk_tipi}" if len(str(sgk_tipi)) == 1 else str(sgk_tipi)
+        if engellilik_derecesi:
+            engel_str = engellilik_derecesi.replace('_derece', '') if isinstance(engellilik_derecesi, str) else str(
+                engellilik_derecesi)
+        else:
+            engel_str = "0"
+
+        sonuc = net_brut_aylik(
+            hedef_net=aylik_brut_ucret,
+            ay=ay,
+            devreden_matrah=kumulatif_gv_matrahi,
+            sigorta_tipi_kodu=kutuphane_sgk_kodu,
+            engel_derecesi=engel_str,
+            bes=bes_aktif,
+            bes_orani=c.BES_ORANI / 100 if bes_aktif else None
+        )
+        aylik_brut_ucret = yuvarla(sonuc['brut'])
+
+        # Net giriş yapıldığında 30 gün standardı kullan
+        ay_gun_sayisi = 30
+        calisan_gun = 30
+
+    elif ucret_tipi == 'net' and not BORDRO_LIB_AVAILABLE:
+        raise ImportError(
+            "Net → Brüt dönüşümü için 'bordro-hesaplama' kütüphanesi gerekli. "
+            "Kurulum: pip install bordro-hesaplama"
+        )
+
+        sonuc = net_brut_aylik(
+            hedef_net=aylik_brut_ucret,  # Aslında bu net değeri
+            ay=ay,
+            devreden_matrah=kumulatif_gv_matrahi,
+            sigorta_tipi_kodu=kutuphane_sgk_kodu,
+            engel_derecesi=engel_str,
+            bes=bes_aktif,
+            bes_orani=c.BES_ORANI / 100 if bes_aktif else None
+        )
+        aylik_brut_ucret = yuvarla(sonuc['brut'])
+    elif ucret_tipi == 'net' and not BORDRO_LIB_AVAILABLE:
+        raise ImportError(
+            "Net → Brüt dönüşümü için 'bordro-hesaplama' kütüphanesi gerekli. "
+            "Kurulum: pip install bordro-hesaplama"
+        )
     if ay_gun_sayisi is None:
         ay_gun_sayisi = c.get_ay_gun_sayisi(ay, yil, ay_gun_secimi)
     # ADIM 1: TEMEL ÜCRET HESABI
@@ -643,6 +695,7 @@ def hesapla_bordro(
             'ay': ay,
             'ay_adi': c.AYLAR.get(ay, ''),
             'yil': yil,
+            'ucret_tipi': ucret_tipi,
         },
         'temel_ucret': {
             'aylik_brut': yuvarla(aylik_brut_ucret),
