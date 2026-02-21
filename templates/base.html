@@ -32,6 +32,11 @@
                         <a href="{% url 'profil' %}" class="user-menu-item">
                             <i class="fas fa-user-cog"></i> Profil Ayarları
                         </a>
+                        {% if user.is_staff %}
+                        <a href="{% url 'admin_panel' %}" class="user-menu-item">
+                            <i class="fas fa-shield-alt"></i> Admin Paneli
+                        </a>
+                        {% endif %}
                         <a href="{% url 'cikis' %}" class="user-menu-item">
                             <i class="fas fa-sign-out-alt"></i> Çıkış Yap
                         </a>

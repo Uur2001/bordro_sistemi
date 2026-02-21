@@ -1,0 +1,364 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Admin Paneli{% endblock %}
+
+{% block content %}
+<div class="admin-container">
+    <div class="admin-header">
+        <h1 class="page-title">Admin Paneli</h1>
+        <button class="btn btn-primary" onclick="yeniKullaniciModal()">
+            <i class="fas fa-plus"></i> Yeni Kullanıcı
+        </button>
+    </div>
+    
+    <!-- İstatistik Kartları -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-icon blue"><i class="fas fa-users"></i></div>
+            <div class="stat-info">
+                <span class="stat-number">{{ toplam_kullanici }}</span>
+                <span class="stat-label">Toplam Kullanıcı</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Kullanıcı Tablosu -->
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <i class="fas fa-users-cog"></i>
+            <h3>Kayıtlı Kullanıcılar</h3>
+        </div>
+        <div class="table-responsive">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Kullanıcı Adı</th>
+                        <th>Ad Soyad</th>
+                        <th>E-posta</th>
+                        <th>Kayıt Tarihi</th>
+                        <th>Son Giriş</th>
+                        <th>Durum</th>
+                        <th>Yetki</th>
+                        <th>İstatistikler</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in kullanicilar %}
+                    <tr>
+                        <td>{{ item.user.id }}</td>
+                        <td><strong>{{ item.user.username }}</strong></td>
+                        <td>{{ item.user.first_name }} {{ item.user.last_name }}</td>
+                        <td>{{ item.user.email|default:"-" }}</td>
+                        <td>{{ item.user.date_joined|date:"d.m.Y H:i" }}</td>
+                        <td>{{ item.user.last_login|date:"d.m.Y H:i"|default:"-" }}</td>
+                        <td>
+                            {% if item.user.is_active %}
+                            <span class="badge badge-success">Aktif</span>
+                            {% else %}
+                            <span class="badge badge-danger">Pasif</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if item.user.is_superuser %}
+                            <span class="badge badge-purple">Superuser</span>
+                            {% elif item.user.is_staff %}
+                            <span class="badge badge-blue">Staff</span>
+                            {% else %}
+                            <span class="badge badge-gray">Kullanıcı</span>
+                            {% endif %}
+                        </td>
+                        <td class="stats-cell">
+                            <span title="Çalışan">👥 {{ item.calisan_sayisi }}</span>
+                            <span title="Aylık Bordro">📋 {{ item.aylik_bordro }}</span>
+                            <span title="Yıllık Bordro">📊 {{ item.yillik_bordro }}</span>
+                            <span title="Tazminat">💰 {{ item.tazminat }}</span>
+                        </td>
+                        <td class="actions">
+                            <button class="btn-icon edit" onclick="kullaniciDuzenle({{ item.user.id }}, '{{ item.user.username }}', '{{ item.user.first_name }}', '{{ item.user.last_name }}', '{{ item.user.email }}', {{ item.user.is_active|yesno:'true,false' }}, {{ item.user.is_staff|yesno:'true,false' }})" title="Düzenle">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            {% if not item.user.is_superuser and item.user.id != request.user.id %}
+                            <button class="btn-icon delete" onclick="kullaniciSil({{ item.user.id }}, '{{ item.user.username }}')" title="Sil">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="10" class="empty-message">Henüz kullanıcı bulunmuyor.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Yeni Kullanıcı Modal -->
+<div id="yeniKullaniciModal" class="modal">
+    <div class="modal-content modal-lg">
+        <div class="modal-header">
+            <h3>Yeni Kullanıcı Ekle</h3>
+            <span class="modal-close" onclick="modalKapat('yeniKullaniciModal')">&times;</span>
+        </div>
+        <div class="modal-body">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Kullanıcı Adı *</label>
+                    <input type="text" id="yeni_username" class="form-control" placeholder="Kullanıcı adı">
+                </div>
+                <div class="form-group">
+                    <label>E-posta</label>
+                    <input type="email" id="yeni_email" class="form-control" placeholder="E-posta adresi">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Ad</label>
+                    <input type="text" id="yeni_first_name" class="form-control" placeholder="Ad">
+                </div>
+                <div class="form-group">
+                    <label>Soyad</label>
+                    <input type="text" id="yeni_last_name" class="form-control" placeholder="Soyad">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Şifre *</label>
+                <input type="password" id="yeni_password" class="form-control" placeholder="Şifre">
+                <small class="form-hint">En az 8 karakter, bir büyük harf ve bir rakam</small>
+            </div>
+            <div class="form-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="yeni_is_staff">
+                    <span>Staff yetkisi ver (Admin paneline erişebilir)</span>
+                </label>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="modalKapat('yeniKullaniciModal')">İptal</button>
+            <button class="btn btn-primary" onclick="kullaniciEkle()">Kullanıcı Ekle</button>
+        </div>
+    </div>
+</div>
+
+<!-- Düzenle Modal -->
+<div id="duzenleModal" class="modal">
+    <div class="modal-content modal-lg">
+        <div class="modal-header">
+            <h3>Kullanıcı Düzenle</h3>
+            <span class="modal-close" onclick="modalKapat('duzenleModal')">&times;</span>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="duzenle_user_id">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Kullanıcı Adı</label>
+                    <input type="text" id="duzenle_username" class="form-control" disabled>
+                    <small class="form-hint">Kullanıcı adı değiştirilemez</small>
+                </div>
+                <div class="form-group">
+                    <label>E-posta</label>
+                    <input type="email" id="duzenle_email" class="form-control" placeholder="E-posta adresi">
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Ad</label>
+                    <input type="text" id="duzenle_first_name" class="form-control" placeholder="Ad">
+                </div>
+                <div class="form-group">
+                    <label>Soyad</label>
+                    <input type="text" id="duzenle_last_name" class="form-control" placeholder="Soyad">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Yeni Şifre (Boş bırakılırsa değişmez)</label>
+                <input type="password" id="duzenle_password" class="form-control" placeholder="Yeni şifre">
+                <small class="form-hint">En az 8 karakter, bir büyük harf ve bir rakam</small>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="duzenle_is_active">
+                        <span>Aktif</span>
+                    </label>
+                </div>
+                <div class="form-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="duzenle_is_staff">
+                        <span>Staff yetkisi</span>
+                    </label>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="modalKapat('duzenleModal')">İptal</button>
+            <button class="btn btn-primary" onclick="kullaniciGuncelle()">Kaydet</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Modal aç/kapat
+function yeniKullaniciModal() {
+    document.getElementById('yeni_username').value = '';
+    document.getElementById('yeni_email').value = '';
+    document.getElementById('yeni_first_name').value = '';
+    document.getElementById('yeni_last_name').value = '';
+    document.getElementById('yeni_password').value = '';
+    document.getElementById('yeni_is_staff').checked = false;
+    document.getElementById('yeniKullaniciModal').classList.add('active');
+}
+
+function kullaniciDuzenle(id, username, firstName, lastName, email, isActive, isStaff) {
+    document.getElementById('duzenle_user_id').value = id;
+    document.getElementById('duzenle_username').value = username;
+    document.getElementById('duzenle_first_name').value = firstName;
+    document.getElementById('duzenle_last_name').value = lastName;
+    document.getElementById('duzenle_email').value = email;
+    document.getElementById('duzenle_password').value = '';
+    document.getElementById('duzenle_is_active').checked = isActive;
+    document.getElementById('duzenle_is_staff').checked = isStaff;
+    document.getElementById('duzenleModal').classList.add('active');
+}
+
+function modalKapat(modalId) {
+    document.getElementById(modalId).classList.remove('active');
+}
+
+// Modal dışına tıklayınca kapat
+document.querySelectorAll('.modal').forEach(modal => {
+    modal.addEventListener('click', function(e) {
+        if (e.target === this) {
+            this.classList.remove('active');
+        }
+    });
+});
+
+// Kullanıcı ekle
+async function kullaniciEkle() {
+    const username = document.getElementById('yeni_username').value.trim();
+    const email = document.getElementById('yeni_email').value.trim();
+    const first_name = document.getElementById('yeni_first_name').value.trim();
+    const last_name = document.getElementById('yeni_last_name').value.trim();
+    const password = document.getElementById('yeni_password').value;
+    const is_staff = document.getElementById('yeni_is_staff').checked;
+    
+    if (!username) {
+        alert('Kullanıcı adı zorunludur!');
+        return;
+    }
+    
+    if (!password) {
+        alert('Şifre zorunludur!');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/admin/kullanici/ekle/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({ username, email, first_name, last_name, password, is_staff })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert(result.message);
+            location.reload();
+        } else {
+            alert('Hata: ' + result.error);
+        }
+    } catch (error) {
+        alert('Bağlantı hatası: ' + error.message);
+    }
+}
+
+// Kullanıcı güncelle
+async function kullaniciGuncelle() {
+    const user_id = document.getElementById('duzenle_user_id').value;
+    const first_name = document.getElementById('duzenle_first_name').value.trim();
+    const last_name = document.getElementById('duzenle_last_name').value.trim();
+    const email = document.getElementById('duzenle_email').value.trim();
+    const password = document.getElementById('duzenle_password').value;
+    const is_active = document.getElementById('duzenle_is_active').checked;
+    const is_staff = document.getElementById('duzenle_is_staff').checked;
+    
+    const data = { first_name, last_name, email, is_active, is_staff };
+    if (password) {
+        data.password = password;
+    }
+    
+    try {
+        const response = await fetch(`/api/admin/kullanici/${user_id}/guncelle/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(data)
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert(result.message);
+            location.reload();
+        } else {
+            alert('Hata: ' + result.error);
+        }
+    } catch (error) {
+        alert('Bağlantı hatası: ' + error.message);
+    }
+}
+
+// Kullanıcı sil
+async function kullaniciSil(id, username) {
+    if (!confirm(`"${username}" kullanıcısını silmek istediğinize emin misiniz?\n\nBu işlem geri alınamaz ve kullanıcının tüm verileri silinecektir!`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/admin/kullanici/${id}/sil/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert(result.message);
+            location.reload();
+        } else {
+            alert('Hata: ' + result.error);
+        }
+    } catch (error) {
+        alert('Bağlantı hatası: ' + error.message);
+    }
+}
+</script>
+{% endblock %}

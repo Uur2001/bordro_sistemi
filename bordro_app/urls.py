@@ -29,4 +29,8 @@ urlpatterns = [
     path('profil/', views.profil, name='profil'),
     path('api/profil/guncelle/', views.profil_guncelle, name='profil_guncelle'),
     path('api/sifre-degistir/', views.sifre_degistir, name='sifre_degistir'),
+    path('admin-panel/', views.admin_panel, name='admin_panel'),
+    path('api/admin/kullanici/ekle/', views.admin_kullanici_ekle, name='admin_kullanici_ekle'),
+    path('api/admin/kullanici/<int:user_id>/guncelle/', views.admin_kullanici_guncelle, name='admin_kullanici_guncelle'),
+    path('api/admin/kullanici/<int:user_id>/sil/', views.admin_kullanici_sil, name='admin_kullanici_sil'),
 ]

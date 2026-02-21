@@ -14,6 +14,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect
 from .exports import create_aylik_bordro_excel, create_yillik_bordro_excel, create_tazminat_excel
+from django.contrib.admin.views.decorators import staff_member_required
 
 
 def home(request):
@@ -875,6 +876,174 @@ def sifre_degistir(request):
         return JsonResponse({
             'success': True,
             'message': 'Şifreniz başarıyla değiştirildi!'
+        })
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@staff_member_required(login_url='giris')
+def admin_panel(request):
+    """Admin paneli - Kullanıcı yönetimi"""
+
+    # Tüm kullanıcıları getir
+    kullanicilar = User.objects.all().order_by('-date_joined')
+
+    # Her kullanıcı için istatistik hesapla
+    kullanici_listesi = []
+    for user in kullanicilar:
+        kullanici_listesi.append({
+            'user': user,
+            'calisan_sayisi': Calisan.objects.filter(user=user, aktif=True).count(),
+            'aylik_bordro': AylikBordro.objects.filter(user=user).count(),
+            'yillik_bordro': YillikBordro.objects.filter(user=user).count(),
+            'tazminat': Tazminat.objects.filter(user=user).count(),
+        })
+
+    context = {
+        'active_page': 'admin_panel',
+        'kullanicilar': kullanici_listesi,
+        'toplam_kullanici': kullanicilar.count(),
+    }
+
+    return render(request, 'admin_panel.html', context)
+
+
+@csrf_exempt
+@staff_member_required(login_url='giris')
+def admin_kullanici_ekle(request):
+    """Yeni kullanıcı ekle"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Sadece POST metodu kabul edilir'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+
+        username = data.get('username', '').strip()
+        email = data.get('email', '').strip()
+        password = data.get('password', '')
+        first_name = data.get('first_name', '').strip()
+        last_name = data.get('last_name', '').strip()
+        is_staff = data.get('is_staff', False)
+
+        # Validasyonlar
+        if not username:
+            return JsonResponse({'success': False, 'error': 'Kullanıcı adı zorunludur!'}, status=400)
+
+        if User.objects.filter(username=username).exists():
+            return JsonResponse({'success': False, 'error': 'Bu kullanıcı adı zaten mevcut!'}, status=400)
+
+        if email and User.objects.filter(email=email).exists():
+            return JsonResponse({'success': False, 'error': 'Bu e-posta zaten kullanılıyor!'}, status=400)
+
+        if len(password) < 8:
+            return JsonResponse({'success': False, 'error': 'Şifre en az 8 karakter olmalı!'}, status=400)
+
+        if not any(c.isupper() for c in password):
+            return JsonResponse({'success': False, 'error': 'Şifre en az bir büyük harf içermeli!'}, status=400)
+
+        if not any(c.isdigit() for c in password):
+            return JsonResponse({'success': False, 'error': 'Şifre en az bir rakam içermeli!'}, status=400)
+
+        # Kullanıcı oluştur
+        user = User.objects.create_user(
+            username=username,
+            email=email,
+            password=password,
+            first_name=first_name,
+            last_name=last_name,
+        )
+        user.is_staff = is_staff
+        user.save()
+
+        return JsonResponse({
+            'success': True,
+            'message': f'"{username}" kullanıcısı başarıyla oluşturuldu!',
+            'user_id': user.id
+        })
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@csrf_exempt
+@staff_member_required(login_url='giris')
+def admin_kullanici_guncelle(request, user_id):
+    """Kullanıcı bilgilerini güncelle"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Sadece POST metodu kabul edilir'}, status=405)
+
+    try:
+        user = User.objects.filter(id=user_id).first()
+        if not user:
+            return JsonResponse({'success': False, 'error': 'Kullanıcı bulunamadı!'}, status=404)
+
+        data = json.loads(request.body)
+
+        # Bilgileri güncelle
+        if 'first_name' in data:
+            user.first_name = data['first_name'].strip()
+        if 'last_name' in data:
+            user.last_name = data['last_name'].strip()
+        if 'email' in data:
+            new_email = data['email'].strip()
+            if new_email and new_email != user.email:
+                if User.objects.filter(email=new_email).exclude(id=user_id).exists():
+                    return JsonResponse({'success': False, 'error': 'Bu e-posta zaten kullanılıyor!'}, status=400)
+                user.email = new_email
+        if 'is_active' in data:
+            user.is_active = data['is_active']
+        if 'is_staff' in data:
+            user.is_staff = data['is_staff']
+
+        # Şifre değişikliği (opsiyonel)
+        if data.get('password'):
+            password = data['password']
+            if len(password) < 8:
+                return JsonResponse({'success': False, 'error': 'Şifre en az 8 karakter olmalı!'}, status=400)
+            if not any(c.isupper() for c in password):
+                return JsonResponse({'success': False, 'error': 'Şifre en az bir büyük harf içermeli!'}, status=400)
+            if not any(c.isdigit() for c in password):
+                return JsonResponse({'success': False, 'error': 'Şifre en az bir rakam içermeli!'}, status=400)
+            user.set_password(password)
+
+        user.save()
+
+        return JsonResponse({
+            'success': True,
+            'message': f'"{user.username}" kullanıcısı güncellendi!'
+        })
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@csrf_exempt
+@staff_member_required(login_url='giris')
+def admin_kullanici_sil(request, user_id):
+    """Kullanıcıyı sil"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Sadece POST metodu kabul edilir'}, status=405)
+
+    try:
+        user = User.objects.filter(id=user_id).first()
+        if not user:
+            return JsonResponse({'success': False, 'error': 'Kullanıcı bulunamadı!'}, status=404)
+
+        # Kendini silmeye çalışıyorsa engelle
+        if user.id == request.user.id:
+            return JsonResponse({'success': False, 'error': 'Kendinizi silemezsiniz!'}, status=400)
+
+        # Superuser'ı silmeye çalışıyorsa engelle
+        if user.is_superuser:
+            return JsonResponse({'success': False, 'error': 'Superuser silinemez!'}, status=400)
+
+        username = user.username
+        user.delete()
+
+        return JsonResponse({
+            'success': True,
+            'message': f'"{username}" kullanıcısı silindi!'
         })
 
     except Exception as e:
