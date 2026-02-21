@@ -1,0 +1,306 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Çalışan ve Bordro Yönetimi{% endblock %}
+
+{% block content %}
+<div class="management-container">
+    <h1 class="page-title">Çalışan ve Bordro Yönetimi</h1>
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-icon blue"><i class="fas fa-users"></i></div>
+            <div class="stat-info">
+                <span class="stat-number">{{ toplam_calisan }}</span>
+                <span class="stat-label">Çalışan</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon green"><i class="fas fa-file-invoice"></i></div>
+            <div class="stat-info">
+                <span class="stat-number">{{ toplam_aylik }}</span>
+                <span class="stat-label">Aylık Bordro</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon purple"><i class="fas fa-calendar-alt"></i></div>
+            <div class="stat-info">
+                <span class="stat-number">{{ toplam_yillik }}</span>
+                <span class="stat-label">Yıllık Bordro</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon orange"><i class="fas fa-hand-holding-usd"></i></div>
+            <div class="stat-info">
+                <span class="stat-number">{{ toplam_tazminat }}</span>
+                <span class="stat-label">Tazminat</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="tabs-container">
+        <div class="tabs-header">
+            <button class="tab-btn active" data-tab="calisanlar">
+                <i class="fas fa-users"></i> Çalışanlar
+            </button>
+            <button class="tab-btn" data-tab="aylik">
+                <i class="fas fa-file-invoice"></i> Aylık Bordrolar
+            </button>
+            <button class="tab-btn" data-tab="yillik">
+                <i class="fas fa-calendar-alt"></i> Yıllık Bordrolar
+            </button>
+            <button class="tab-btn" data-tab="tazminat">
+                <i class="fas fa-hand-holding-usd"></i> Tazminatlar
+            </button>
+        </div>
+
+        <div class="tab-content active" id="tab-calisanlar">
+            <div class="table-header">
+                <h3>Çalışan Listesi</h3>
+                <button class="btn btn-primary btn-sm" onclick="yeniCalisanModal()">
+                    <i class="fas fa-plus"></i> Yeni Çalışan
+                </button>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Ad Soyad</th>
+                            <th>Kayıt Tarihi</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for calisan in calisanlar %}
+                        <tr>
+                            <td>{{ calisan.id }}</td>
+                            <td>{{ calisan.tam_ad }}</td>
+                            <td>{{ calisan.created_at|date:"d.m.Y H:i" }}</td>
+                            <td class="actions">
+                                <button class="btn-icon edit" onclick="calisanDuzenle({{ calisan.id }}, '{{ calisan.ad }}', '{{ calisan.soyad }}')" title="Düzenle">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn-icon delete" onclick="calisanSilById({{ calisan.id }}, '{{ calisan.tam_ad }}')" title="Sil">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="empty-message">Henüz çalışan eklenmemiş.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="tab-content" id="tab-aylik">
+            <div class="table-header">
+                <h3>Aylık Bordro Listesi</h3>
+                <div class="filters">
+                    <select id="filter-calisan-aylik" onchange="filterTable('aylik')">
+                        <option value="">Tüm Çalışanlar</option>
+                        {% for c in calisanlar %}
+                        <option value="{{ c.id }}">{{ c.tam_ad }}</option>
+                        {% endfor %}
+                    </select>
+                    <select id="filter-yil-aylik" onchange="filterTable('aylik')">
+                        <option value="">Tüm Yıllar</option>
+                        {% for y in yillar %}
+                        <option value="{{ y }}">{{ y }}</option>
+                        {% endfor %}
+                    </select>
+                    <select id="filter-ay-aylik" onchange="filterTable('aylik')">
+                        <option value="">Tüm Aylar</option>
+                        {% for ay in aylar %}
+                        <option value="{{ ay.0 }}">{{ ay.1 }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="data-table" id="table-aylik">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Çalışan</th>
+                            <th>Dönem</th>
+                            <th>Brüt</th>
+                            <th>Net</th>
+                            <th>Tarih</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for bordro in aylik_bordrolar %}
+                        <tr data-calisan="{{ bordro.calisan_id|default:'' }}" data-yil="{{ bordro.bordro_yil }}" data-ay="{{ bordro.bordro_ay }}">
+                            <td>{{ bordro.id }}</td>
+                            <td>{{ bordro.calisan.tam_ad|default:"Anonim" }}</td>
+                            <td>{{ bordro.bordro_yil }}/{{ bordro.bordro_ay }}</td>
+                            <td>{% if bordro.hesaplama_sonuc %}{{ bordro.hesaplama_sonuc.brut_kazanclar.toplam_brut|floatformat:2 }} ₺{% else %}-{% endif %}</td>
+                            <td>{% if bordro.hesaplama_sonuc %}{{ bordro.hesaplama_sonuc.net_ucret|floatformat:2 }} ₺{% else %}-{% endif %}</td>
+                            <td>{{ bordro.created_at|date:"d.m.Y H:i" }}</td>
+                            <td class="actions">
+                                <a href="{% url 'export_aylik_excel' bordro.id %}" class="btn-icon excel" title="Excel İndir">
+                                    <i class="fas fa-file-excel"></i>
+                                </a>
+                                <button class="btn-icon delete" onclick="aylikBordroSil({{ bordro.id }})" title="Sil">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="empty-message">Henüz aylık bordro hesaplanmamış.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="tab-content" id="tab-yillik">
+            <div class="table-header">
+                <h3>Yıllık Bordro Listesi</h3>
+                <div class="filters">
+                    <select id="filter-calisan-yillik" onchange="filterTable('yillik')">
+                        <option value="">Tüm Çalışanlar</option>
+                        {% for c in calisanlar %}
+                        <option value="{{ c.id }}">{{ c.tam_ad }}</option>
+                        {% endfor %}
+                    </select>
+                    <select id="filter-yil-yillik" onchange="filterTable('yillik')">
+                        <option value="">Tüm Yıllar</option>
+                        {% for y in yillar %}
+                        <option value="{{ y }}">{{ y }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="data-table" id="table-yillik">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Çalışan</th>
+                            <th>Yıl</th>
+                            <th>Toplam Brüt</th>
+                            <th>Toplam Net</th>
+                            <th>Tarih</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for bordro in yillik_bordrolar %}
+                        <tr data-calisan="{{ bordro.calisan_id|default:'' }}" data-yil="{{ bordro.bordro_yili }}">
+                            <td>{{ bordro.id }}</td>
+                            <td>{{ bordro.calisan.tam_ad|default:"Anonim" }}</td>
+                            <td>{{ bordro.bordro_yili }}</td>
+                            <td>{{ bordro.toplam_brut|floatformat:2 }} ₺</td>
+                            <td>{{ bordro.toplam_net|floatformat:2 }} ₺</td>
+                            <td>{{ bordro.created_at|date:"d.m.Y H:i" }}</td>
+                            <td class="actions">
+                                <a href="{% url 'export_yillik_excel' bordro.id %}" class="btn-icon excel" title="Excel İndir">
+                                    <i class="fas fa-file-excel"></i>
+                                </a>
+                                <button class="btn-icon delete" onclick="yillikBordroSil({{ bordro.id }})" title="Sil">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="7" class="empty-message">Henüz yıllık bordro hesaplanmamış.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="tab-content" id="tab-tazminat">
+            <div class="table-header">
+                <h3>Tazminat Listesi</h3>
+                <div class="filters">
+                    <select id="filter-calisan-tazminat" onchange="filterTable('tazminat')">
+                        <option value="">Tüm Çalışanlar</option>
+                        {% for c in calisanlar %}
+                        <option value="{{ c.id }}">{{ c.tam_ad }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="data-table" id="table-tazminat">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Çalışan</th>
+                            <th>Giriş Tarihi</th>
+                            <th>Çıkış Tarihi</th>
+                            <th>Kıdem Tazminatı</th>
+                            <th>İhbar Tazminatı</th>
+                            <th>Tarih</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for taz in tazminatlar %}
+                        <tr data-calisan="{{ taz.calisan_id|default:'' }}">
+                            <td>{{ taz.id }}</td>
+                            <td>{{ taz.calisan.tam_ad|default:"Anonim" }}</td>
+                            <td>{{ taz.giris_tarihi|date:"d.m.Y" }}</td>
+                            <td>{{ taz.cikis_tarihi|date:"d.m.Y" }}</td>
+                            <td>{% if taz.hesaplama_sonuc %}{{ taz.hesaplama_sonuc.kidem.net_tazminat|floatformat:2 }} ₺{% else %}-{% endif %}</td>
+                            <td>{% if taz.hesaplama_sonuc and taz.hesaplama_sonuc.ihbar %}{{ taz.hesaplama_sonuc.ihbar.net_tazminat|floatformat:2 }} ₺{% else %}-{% endif %}</td>
+                            <td>{{ taz.created_at|date:"d.m.Y H:i" }}</td>
+                            <td class="actions">
+                                <a href="{% url 'export_tazminat_excel' taz.id %}" class="btn-icon excel" title="Excel İndir">
+                                    <i class="fas fa-file-excel"></i>
+                                </a>
+                                <button class="btn-icon delete" onclick="tazminatSil({{ taz.id }})" title="Sil">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="empty-message">Henüz tazminat hesaplanmamış.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="calisanModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle">Yeni Çalışan Ekle</h3>
+            <span class="modal-close" onclick="modalKapat()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <input type="hidden" id="calisan_id">
+            <div class="form-group">
+                <label>Ad</label>
+                <input type="text" id="calisan_ad" class="form-control" placeholder="Çalışan adı">
+            </div>
+            <div class="form-group">
+                <label>Soyad</label>
+                <input type="text" id="calisan_soyad" class="form-control" placeholder="Çalışan soyadı">
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" onclick="modalKapat()">İptal</button>
+            <button class="btn btn-primary" onclick="calisanKaydet()">Kaydet</button>
+        </div>
+    </div>
+</div>
+{% endblock %}

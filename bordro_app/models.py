@@ -36,6 +36,7 @@ class AylikBordro(models.Model):
         ('3_derece', '3. Derece'),
     ]
 
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='aylik_bordrolar')  # YENİ
     calisan = models.ForeignKey(Calisan, on_delete=models.CASCADE, related_name='bordrolar', null=True, blank=True)
     bordro_ay = models.IntegerField(choices=[(i, i) for i in range(1, 13)])
     bordro_yil = models.IntegerField()
@@ -69,7 +70,6 @@ class AylikBordro(models.Model):
     class Meta:
         verbose_name = "Aylık Bordro"
         verbose_name_plural = "Aylık Bordrolar"
-        unique_together = ['calisan', 'bordro_yil', 'bordro_ay']
 
     def __str__(self):
         return f"{self.bordro_yil}/{self.bordro_ay} - {self.calisan if self.calisan else 'Anonim'}"
@@ -83,8 +83,8 @@ class YillikBordro(models.Model):
         ('3_derece', '3. Derece'),
     ]
 
-    calisan = models.ForeignKey(Calisan, on_delete=models.CASCADE, related_name='yillik_bordrolar', null=True,
-                                blank=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='yillik_bordrolar')  # YENİ
+    calisan = models.ForeignKey(Calisan, on_delete=models.CASCADE, related_name='yillik_bordrolar_calisan', null=True, blank=True)
     bordro_yili = models.IntegerField()
     sgk_tipi = models.CharField(max_length=10, default='01')
     kanun_kodu = models.CharField(max_length=10, default='00000')
@@ -105,21 +105,21 @@ class YillikBordro(models.Model):
     class Meta:
         verbose_name = "Yıllık Bordro"
         verbose_name_plural = "Yıllık Bordrolar"
-        unique_together = ['calisan', 'bordro_yili']
 
     def __str__(self):
         return f"{self.bordro_yili} - {self.calisan if self.calisan else 'Anonim'}"
 
 
 class Tazminat(models.Model):
-    calisan = models.ForeignKey(Calisan, on_delete=models.CASCADE, related_name='tazminatlar', null=True, blank=True)  # DEĞİŞTİ
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='tazminatlar')  # YENİ
+    calisan = models.ForeignKey(Calisan, on_delete=models.CASCADE, related_name='tazminatlar_calisan', null=True, blank=True)
     giris_tarihi = models.DateField()
     cikis_tarihi = models.DateField()
-    kidem_disi_sure = models.IntegerField(default=0)  # gün cinsinden
+    kidem_disi_sure = models.IntegerField(default=0)
     aylik_brut_ucret = models.DecimalField(max_digits=12, decimal_places=2)
     aylik_brut_ek_ucret = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     yillik_brut_ikramiye = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    kumulatif_gv_matrahi = models.DecimalField(max_digits=14, decimal_places=2, default=0)  # YENİ
+    kumulatif_gv_matrahi = models.DecimalField(max_digits=14, decimal_places=2, default=0)
     ihbar_tazminati = models.BooleanField(default=True)
     ihbar_gelir_vergisi = models.BooleanField(default=True)
     ihbar_damga_vergisi = models.BooleanField(default=True)

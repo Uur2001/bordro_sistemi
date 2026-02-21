@@ -80,6 +80,7 @@ def aylik_hesapla(request):
                     calisan = None
 
             bordro = AylikBordro.objects.create(
+                user=request.user,
                 calisan=calisan,
                 bordro_yil=yil,
                 bordro_ay=ay,
@@ -181,6 +182,7 @@ def yillik_hesapla_api(request):
                 calisan = None
         yillik_ozet = sonuc.get('yillik_ozet', {})
         bordro = YillikBordro.objects.create(
+            user=request.user,
             calisan=calisan,
             bordro_yili=data.get('yil', 2026),
             sgk_tipi=sgk_tipi,
@@ -343,6 +345,7 @@ def tazminat_hesapla_api(request):
                 return datetime.strptime(tarih_str, "%d.%m.%Y").date()
 
         tazminat_kayit = Tazminat.objects.create(
+            user=request.user,
             calisan=calisan,
             giris_tarihi=parse_tarih(giris_tarihi),
             cikis_tarihi=parse_tarih(cikis_tarihi),
@@ -591,7 +594,7 @@ def calisan_detay(request, calisan_id):
 @login_required(login_url='giris')
 def export_aylik_excel(request, bordro_id):
     try:
-        bordro = AylikBordro.objects.filter(id=bordro_id).first()
+        bordro = AylikBordro.objects.filter(id=bordro_id,user=request.user).first()
         if not bordro:
             return HttpResponse("Bordro bulunamadı", status=404)
 
@@ -623,7 +626,7 @@ def export_aylik_excel(request, bordro_id):
 @login_required(login_url='giris')
 def export_yillik_excel(request, bordro_id):
     try:
-        bordro = YillikBordro.objects.filter(id=bordro_id).first()
+        bordro = YillikBordro.objects.filter(id=bordro_id, user=request.user).first()
         if not bordro:
             return HttpResponse("Bordro bulunamadı", status=404)
 
@@ -656,7 +659,7 @@ def export_yillik_excel(request, bordro_id):
 @login_required(login_url='giris')
 def export_tazminat_excel(request, tazminat_id):
     try:
-        tazminat = Tazminat.objects.filter(id=tazminat_id).first()
+        tazminat = Tazminat.objects.filter(id=tazminat_id, user=request.user).first()
         if not tazminat:
             return HttpResponse("Tazminat bulunamadı", status=404)
 
@@ -679,3 +682,200 @@ def export_tazminat_excel(request, tazminat_id):
 
     except Exception as e:
         return HttpResponse(f"Hata: {str(e)}", status=500)
+
+
+@login_required(login_url='giris')
+def calisan_yonetimi(request):
+    calisan_filter = request.GET.get('calisan', '')
+    yil_filter = request.GET.get('yil', '')
+    ay_filter = request.GET.get('ay', '')
+    tur_filter = request.GET.get('tur', 'hepsi')
+    calisanlar = Calisan.objects.filter(user=request.user, aktif=True).order_by('ad', 'soyad')
+    aylik_bordrolar = AylikBordro.objects.filter(user=request.user).order_by('-created_at')
+    yillik_bordrolar = YillikBordro.objects.filter(user=request.user).order_by('-created_at')
+    tazminatlar = Tazminat.objects.filter(user=request.user).order_by('-created_at')
+
+    if calisan_filter:
+        aylik_bordrolar = aylik_bordrolar.filter(calisan_id=calisan_filter)
+        yillik_bordrolar = yillik_bordrolar.filter(calisan_id=calisan_filter)
+        tazminatlar = tazminatlar.filter(calisan_id=calisan_filter)
+
+    if yil_filter:
+        aylik_bordrolar = aylik_bordrolar.filter(bordro_yil=yil_filter)
+        yillik_bordrolar = yillik_bordrolar.filter(bordro_yili=yil_filter)
+
+    if ay_filter:
+        aylik_bordrolar = aylik_bordrolar.filter(bordro_ay=ay_filter)
+
+    yillar = list(range(2020, 2031))
+    aylar = [
+        (1, 'Ocak'), (2, 'Şubat'), (3, 'Mart'), (4, 'Nisan'),
+        (5, 'Mayıs'), (6, 'Haziran'), (7, 'Temmuz'), (8, 'Ağustos'),
+        (9, 'Eylül'), (10, 'Ekim'), (11, 'Kasım'), (12, 'Aralık')
+    ]
+
+    context = {
+        'active_page': 'calisan_yonetimi',
+        'calisanlar': calisanlar,
+        'aylik_bordrolar': aylik_bordrolar[:50],  # Son 50 kayıt
+        'yillik_bordrolar': yillik_bordrolar[:50],
+        'tazminatlar': tazminatlar[:50],
+        'yillar': yillar,
+        'aylar': aylar,
+        'selected_calisan': calisan_filter,
+        'selected_yil': yil_filter,
+        'selected_ay': ay_filter,
+        'selected_tur': tur_filter,
+        'toplam_calisan': calisanlar.count(),
+        'toplam_aylik': AylikBordro.objects.filter(user=request.user).count(),
+        'toplam_yillik': YillikBordro.objects.filter(user=request.user).count(),
+        'toplam_tazminat': Tazminat.objects.filter(user=request.user).count(),
+    }
+
+    return render(request, 'calisan_yonetimi.html', context)
+
+
+@csrf_exempt
+@login_required(login_url='giris')
+def aylik_bordro_sil(request, bordro_id):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Sadece POST metodu kabul edilir'}, status=405)
+
+    try:
+        bordro = AylikBordro.objects.filter(id=bordro_id, user=request.user).first()
+        if not bordro:
+            return JsonResponse({'success': False, 'error': 'Bordro bulunamadı!'}, status=404)
+
+        bordro.delete()
+        return JsonResponse({'success': True, 'message': 'Bordro başarıyla silindi!'})
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@csrf_exempt
+@login_required(login_url='giris')
+def yillik_bordro_sil(request, bordro_id):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Sadece POST metodu kabul edilir'}, status=405)
+
+    try:
+        bordro = YillikBordro.objects.filter(id=bordro_id, user=request.user).first()
+        if not bordro:
+            return JsonResponse({'success': False, 'error': 'Bordro bulunamadı!'}, status=404)
+
+        bordro.delete()
+        return JsonResponse({'success': True, 'message': 'Bordro başarıyla silindi!'})
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@csrf_exempt
+@login_required(login_url='giris')
+def tazminat_sil(request, tazminat_id):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Sadece POST metodu kabul edilir'}, status=405)
+
+    try:
+        tazminat = Tazminat.objects.filter(id=tazminat_id, user=request.user).first()
+        if not tazminat:
+            return JsonResponse({'success': False, 'error': 'Tazminat bulunamadı!'}, status=404)
+
+        tazminat.delete()
+        return JsonResponse({'success': True, 'message': 'Tazminat başarıyla silindi!'})
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required(login_url='giris')
+def profil(request):
+    """Kullanıcı profil sayfası"""
+    user = request.user
+
+    # İstatistikler
+    toplam_calisan = Calisan.objects.filter(user=user, aktif=True).count()
+    toplam_aylik = AylikBordro.objects.filter(user=user).count()
+    toplam_yillik = YillikBordro.objects.filter(user=user).count()
+    toplam_tazminat = Tazminat.objects.filter(user=user).count()
+
+    context = {
+        'active_page': 'profil',
+        'toplam_calisan': toplam_calisan,
+        'toplam_aylik': toplam_aylik,
+        'toplam_yillik': toplam_yillik,
+        'toplam_tazminat': toplam_tazminat,
+    }
+
+    return render(request, 'profil.html', context)
+
+
+@csrf_exempt
+@login_required(login_url='giris')
+def profil_guncelle(request):
+    """Profil bilgilerini güncelle"""
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Sadece POST metodu kabul edilir'}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        user = request.user
+
+        # Bilgileri güncelle
+        if 'first_name' in data:
+            user.first_name = data['first_name'].strip()
+        if 'last_name' in data:
+            user.last_name = data['last_name'].strip()
+        if 'email' in data:
+            user.email = data['email'].strip()
+
+        user.save()
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Profil bilgileri güncellendi!'
+        })
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@csrf_exempt
+@login_required(login_url='giris')
+def sifre_degistir(request):
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'Sadece POST metodu kabul edilir'}, status=405)
+    try:
+        data = json.loads(request.body)
+        user = request.user
+        mevcut_sifre = data.get('mevcut_sifre', '')
+        yeni_sifre = data.get('yeni_sifre', '')
+        yeni_sifre_tekrar = data.get('yeni_sifre_tekrar', '')
+
+        if not user.check_password(mevcut_sifre):
+            return JsonResponse({'success': False, 'error': 'Mevcut şifre yanlış!'}, status=400)
+
+        if len(yeni_sifre) < 8:
+            return JsonResponse({'success': False, 'error': 'Şifre en az 8 karakter olmalı!'}, status=400)
+
+        if not any(c.isupper() for c in yeni_sifre):
+            return JsonResponse({'success': False, 'error': 'Şifre en az bir büyük harf içermeli!'}, status=400)
+
+        if not any(c.isdigit() for c in yeni_sifre):
+            return JsonResponse({'success': False, 'error': 'Şifre en az bir rakam içermeli!'}, status=400)
+
+        if yeni_sifre != yeni_sifre_tekrar:
+            return JsonResponse({'success': False, 'error': 'Yeni şifreler eşleşmiyor!'}, status=400)
+
+        user.set_password(yeni_sifre)
+        user.save()
+        from django.contrib.auth import update_session_auth_hash
+        update_session_auth_hash(request, user)
+        return JsonResponse({
+            'success': True,
+            'message': 'Şifreniz başarıyla değiştirildi!'
+        })
+
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)

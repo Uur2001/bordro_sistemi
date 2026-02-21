@@ -1,0 +1,241 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Profil Ayarları{% endblock %}
+
+{% block content %}
+<div class="profil-container">
+    <h1 class="page-title">Profil Ayarları</h1>
+    
+    <div class="profil-grid">
+        <!-- Kişisel Bilgiler -->
+        <div class="profil-card">
+            <div class="profil-card-header">
+                <i class="fas fa-user"></i>
+                <h3>Kişisel Bilgiler</h3>
+            </div>
+            <div class="profil-card-body">
+                <div class="form-group">
+                    <label>Ad</label>
+                    <input type="text" id="first_name" class="form-control" value="{{ user.first_name }}" placeholder="Adınız">
+                </div>
+                <div class="form-group">
+                    <label>Soyad</label>
+                    <input type="text" id="last_name" class="form-control" value="{{ user.last_name }}" placeholder="Soyadınız">
+                </div>
+                <div class="form-group">
+                    <label>E-posta</label>
+                    <input type="email" id="email" class="form-control" value="{{ user.email }}" placeholder="E-posta adresiniz">
+                </div>
+                <div class="form-group">
+                    <label>Kullanıcı Adı</label>
+                    <input type="text" class="form-control" value="{{ user.username }}" disabled>
+                    <small class="form-hint">Kullanıcı adı değiştirilemez</small>
+                </div>
+                <button class="btn btn-primary" onclick="profilKaydet()">
+                    <i class="fas fa-save"></i> Kaydet
+                </button>
+            </div>
+        </div>
+
+        <!-- Şifre Değiştir -->
+        <div class="profil-card">
+            <div class="profil-card-header">
+                <i class="fas fa-lock"></i>
+                <h3>Şifre Değiştir</h3>
+            </div>
+            <div class="profil-card-body">
+                <div class="form-group">
+                    <label>Mevcut Şifre</label>
+                    <input type="password" id="mevcut_sifre" class="form-control" placeholder="Mevcut şifreniz">
+                </div>
+                <div class="form-group">
+                    <label>Yeni Şifre</label>
+                    <input type="password" id="yeni_sifre" class="form-control" placeholder="Yeni şifreniz">
+                </div>
+                <div class="form-group">
+                    <label>Yeni Şifre (Tekrar)</label>
+                    <input type="password" id="yeni_sifre_tekrar" class="form-control" placeholder="Yeni şifrenizi tekrar girin">
+                </div>
+                <div class="sifre-kurallari">
+                    <p><i class="fas fa-info-circle"></i> Şifre kuralları:</p>
+                    <ul>
+                        <li id="kural-uzunluk"><i class="fas fa-circle"></i> En az 8 karakter</li>
+                        <li id="kural-buyuk"><i class="fas fa-circle"></i> En az bir büyük harf</li>
+                        <li id="kural-rakam"><i class="fas fa-circle"></i> En az bir rakam</li>
+                    </ul>
+                </div>
+                <button class="btn btn-primary" onclick="sifreDegistir()">
+                    <i class="fas fa-key"></i> Şifreyi Değiştir
+                </button>
+            </div>
+        </div>
+
+        <!-- Hesap İstatistikleri -->
+        <div class="profil-card">
+            <div class="profil-card-header">
+                <i class="fas fa-chart-bar"></i>
+                <h3>Hesap İstatistikleri</h3>
+            </div>
+            <div class="profil-card-body">
+                <div class="stat-item">
+                    <span class="stat-label">Kayıt Tarihi</span>
+                    <span class="stat-value">{{ user.date_joined|date:"d.m.Y" }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Son Giriş</span>
+                    <span class="stat-value">{{ user.last_login|date:"d.m.Y H:i" }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Toplam Çalışan</span>
+                    <span class="stat-value">{{ toplam_calisan }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Aylık Bordro</span>
+                    <span class="stat-value">{{ toplam_aylik }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Yıllık Bordro</span>
+                    <span class="stat-value">{{ toplam_yillik }}</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Tazminat Hesabı</span>
+                    <span class="stat-value">{{ toplam_tazminat }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// Profil kaydet
+async function profilKaydet() {
+    const first_name = document.getElementById('first_name').value.trim();
+    const last_name = document.getElementById('last_name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    
+    try {
+        const response = await fetch('/api/profil/guncelle/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({ first_name, last_name, email })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert(result.message);
+            location.reload();
+        } else {
+            alert('Hata: ' + result.error);
+        }
+    } catch (error) {
+        alert('Bağlantı hatası: ' + error.message);
+    }
+}
+
+// Şifre değiştir
+async function sifreDegistir() {
+    const mevcut_sifre = document.getElementById('mevcut_sifre').value;
+    const yeni_sifre = document.getElementById('yeni_sifre').value;
+    const yeni_sifre_tekrar = document.getElementById('yeni_sifre_tekrar').value;
+    
+    // Client-side validasyon
+    if (!mevcut_sifre) {
+        alert('Mevcut şifrenizi girin!');
+        return;
+    }
+    
+    if (yeni_sifre.length < 8) {
+        alert('Yeni şifre en az 8 karakter olmalı!');
+        return;
+    }
+    
+    if (!/[A-Z]/.test(yeni_sifre)) {
+        alert('Yeni şifre en az bir büyük harf içermeli!');
+        return;
+    }
+    
+    if (!/[0-9]/.test(yeni_sifre)) {
+        alert('Yeni şifre en az bir rakam içermeli!');
+        return;
+    }
+    
+    if (yeni_sifre !== yeni_sifre_tekrar) {
+        alert('Yeni şifreler eşleşmiyor!');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/sifre-degistir/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({ mevcut_sifre, yeni_sifre, yeni_sifre_tekrar })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            alert(result.message);
+            document.getElementById('mevcut_sifre').value = '';
+            document.getElementById('yeni_sifre').value = '';
+            document.getElementById('yeni_sifre_tekrar').value = '';
+        } else {
+            alert('Hata: ' + result.error);
+        }
+    } catch (error) {
+        alert('Bağlantı hatası: ' + error.message);
+    }
+}
+
+// Şifre kurallarını canlı kontrol et
+document.getElementById('yeni_sifre').addEventListener('input', function() {
+    const sifre = this.value;
+    
+    // Uzunluk kontrolü
+    const uzunlukEl = document.getElementById('kural-uzunluk');
+    if (sifre.length >= 8) {
+        uzunlukEl.classList.add('gecerli');
+    } else {
+        uzunlukEl.classList.remove('gecerli');
+    }
+    
+    // Büyük harf kontrolü
+    const buyukEl = document.getElementById('kural-buyuk');
+    if (/[A-Z]/.test(sifre)) {
+        buyukEl.classList.add('gecerli');
+    } else {
+        buyukEl.classList.remove('gecerli');
+    }
+    
+    // Rakam kontrolü
+    const rakamEl = document.getElementById('kural-rakam');
+    if (/[0-9]/.test(sifre)) {
+        rakamEl.classList.add('gecerli');
+    } else {
+        rakamEl.classList.remove('gecerli');
+    }
+});
+</script>
+{% endblock %}

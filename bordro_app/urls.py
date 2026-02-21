@@ -22,4 +22,11 @@ urlpatterns = [
     path('api/export/aylik/<int:bordro_id>/excel/', views.export_aylik_excel, name='export_aylik_excel'),
     path('api/export/yillik/<int:bordro_id>/excel/', views.export_yillik_excel, name='export_yillik_excel'),
     path('api/export/tazminat/<int:tazminat_id>/excel/', views.export_tazminat_excel, name='export_tazminat_excel'),
+    path('calisan-yonetimi/', views.calisan_yonetimi, name='calisan_yonetimi'),
+    path('api/aylik-bordro/<int:bordro_id>/sil/', views.aylik_bordro_sil, name='aylik_bordro_sil'),
+    path('api/yillik-bordro/<int:bordro_id>/sil/', views.yillik_bordro_sil, name='yillik_bordro_sil'),
+    path('api/tazminat/<int:tazminat_id>/sil/', views.tazminat_sil, name='tazminat_sil'),
+    path('profil/', views.profil, name='profil'),
+    path('api/profil/guncelle/', views.profil_guncelle, name='profil_guncelle'),
+    path('api/sifre-degistir/', views.sifre_degistir, name='sifre_degistir'),
 ]

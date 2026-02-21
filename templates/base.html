@@ -29,6 +29,9 @@
                             <strong>{{ user.first_name|default:user.username }}</strong>
                             <small>{{ user.email }}</small>
                         </div>
+                        <a href="{% url 'profil' %}" class="user-menu-item">
+                            <i class="fas fa-user-cog"></i> Profil Ayarları
+                        </a>
                         <a href="{% url 'cikis' %}" class="user-menu-item">
                             <i class="fas fa-sign-out-alt"></i> Çıkış Yap
                         </a>

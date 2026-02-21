@@ -226,3 +226,216 @@ function getCookie(name) {
     }
     return cookieValue;
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    const tabButtons = document.querySelectorAll('.tab-btn');
+    if (tabButtons.length > 0) {
+        tabButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+                this.classList.add('active');
+                document.getElementById('tab-' + this.dataset.tab).classList.add('active');
+            });
+        });
+    }
+
+    const modal = document.getElementById('calisanModal');
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === this) modalKapat();
+        });
+    }
+});
+
+function filterTable(type) {
+    const calisanSelect = document.getElementById('filter-calisan-' + type);
+    const table = document.getElementById('table-' + type);
+
+    if (!calisanSelect || !table) return;
+
+    const calisanVal = calisanSelect.value;
+    const rows = table.querySelectorAll('tbody tr');
+
+    let yilVal = '';
+    let ayVal = '';
+
+    if (type === 'aylik') {
+        const yilSelect = document.getElementById('filter-yil-aylik');
+        const aySelect = document.getElementById('filter-ay-aylik');
+        if (yilSelect) yilVal = yilSelect.value;
+        if (aySelect) ayVal = aySelect.value;
+    } else if (type === 'yillik') {
+        const yilSelect = document.getElementById('filter-yil-yillik');
+        if (yilSelect) yilVal = yilSelect.value;
+    }
+
+    rows.forEach(row => {
+        if (row.querySelector('.empty-message')) return;
+
+        const rowCalisan = row.dataset.calisan || '';
+        const rowYil = row.dataset.yil || '';
+        const rowAy = row.dataset.ay || '';
+
+        let show = true;
+
+        if (calisanVal && rowCalisan !== calisanVal) show = false;
+        if (yilVal && rowYil !== yilVal) show = false;
+        if (ayVal && rowAy !== ayVal) show = false;
+
+        row.style.display = show ? '' : 'none';
+    });
+}
+
+function yeniCalisanModal() {
+    document.getElementById('modalTitle').textContent = 'Yeni Çalışan Ekle';
+    document.getElementById('calisan_id').value = '';
+    document.getElementById('calisan_ad').value = '';
+    document.getElementById('calisan_soyad').value = '';
+    document.getElementById('calisanModal').classList.add('active');
+}
+
+function calisanDuzenle(id, ad, soyad) {
+    document.getElementById('modalTitle').textContent = 'Çalışan Düzenle';
+    document.getElementById('calisan_id').value = id;
+    document.getElementById('calisan_ad').value = ad;
+    document.getElementById('calisan_soyad').value = soyad;
+    document.getElementById('calisanModal').classList.add('active');
+}
+
+function modalKapat() {
+    const modal = document.getElementById('calisanModal');
+    if (modal) modal.classList.remove('active');
+}
+
+async function calisanKaydet() {
+    const id = document.getElementById('calisan_id').value;
+    const ad = document.getElementById('calisan_ad').value.trim();
+    const soyad = document.getElementById('calisan_soyad').value.trim();
+
+    if (!ad || !soyad) {
+        alert('Ad ve soyad alanları zorunludur!');
+        return;
+    }
+
+    const url = id ? `/api/calisan/${id}/guncelle/` : '/api/calisan/ekle/';
+
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({ ad, soyad })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            alert(result.message);
+            location.reload();
+        } else {
+            alert('Hata: ' + result.error);
+        }
+    } catch (error) {
+        alert('Bağlantı hatası: ' + error.message);
+    }
+}
+
+async function calisanSilById(id, ad) {
+    if (!confirm(`"${ad}" isimli çalışanı silmek istediğinize emin misiniz?`)) return;
+
+    try {
+        const response = await fetch(`/api/calisan/${id}/sil/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            alert(result.message);
+            location.reload();
+        } else {
+            alert('Hata: ' + result.error);
+        }
+    } catch (error) {
+        alert('Bağlantı hatası: ' + error.message);
+    }
+}
+
+async function aylikBordroSil(id) {
+    if (!confirm('Bu bordroyu silmek istediğinize emin misiniz?')) return;
+
+    try {
+        const response = await fetch(`/api/aylik-bordro/${id}/sil/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            alert(result.message);
+            location.reload();
+        } else {
+            alert('Hata: ' + result.error);
+        }
+    } catch (error) {
+        alert('Bağlantı hatası: ' + error.message);
+    }
+}
+
+async function yillikBordroSil(id) {
+    if (!confirm('Bu bordroyu silmek istediğinize emin misiniz?')) return;
+
+    try {
+        const response = await fetch(`/api/yillik-bordro/${id}/sil/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            alert(result.message);
+            location.reload();
+        } else {
+            alert('Hata: ' + result.error);
+        }
+    } catch (error) {
+        alert('Bağlantı hatası: ' + error.message);
+    }
+}
+
+async function tazminatSil(id) {
+    if (!confirm('Bu tazminat kaydını silmek istediğinize emin misiniz?')) return;
+
+    try {
+        const response = await fetch(`/api/tazminat/${id}/sil/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            alert(result.message);
+            location.reload();
+        } else {
+            alert('Hata: ' + result.error);
+        }
+    } catch (error) {
+        alert('Bağlantı hatası: ' + error.message);
+    }
+}
